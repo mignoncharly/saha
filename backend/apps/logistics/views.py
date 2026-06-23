@@ -1,0 +1,161 @@
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import TransportRequest
+from .serializers import (
+    TransportRequestListSerializer,
+    TransportRequestDetailSerializer,
+    TransportRequestCreateSerializer,
+    TransportRequestStatusSerializer,
+)
+from .reference import generate_reference_code
+from .status import ALLOWED_STATUS_TRANSITIONS
+from apps.customers.models import Customer
+from apps.core.permissions import IsStaffOrAdmin
+from apps.core.pagination import StandardPagination
+import csv
+from django.http import HttpResponse
+from rest_framework.views import APIView
+from apps.notifications.tasks import send_status_change_notification
+from apps.core.throttles import PublicAnonRateThrottle
+from rest_framework.permissions import IsAuthenticated
+from .filters import TransportRequestFilter
+
+class PublicTransportRequestCreateView(generics.CreateAPIView):
+    throttle_classes = [PublicAnonRateThrottle]
+    serializer_class = TransportRequestCreateSerializer
+    permission_classes = []
+    parser_classes = (MultiPartParser, FormParser)
+
+    def create(self, request, *args, **kwargs):
+        # Validate consent manually
+        consent = request.data.get('consent')
+        if consent != 'true' and consent != True:
+            return Response(
+                {'consent': ['Vous devez accepter d\'être contacté.']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Extract customer data
+        full_name = request.data.get('full_name', '').strip()
+        phone = request.data.get('phone', '').strip()
+        whatsapp_number = request.data.get('whatsapp_number', phone).strip()
+        email = request.data.get('email', '').strip()
+
+        if not full_name:
+            return Response({'full_name': ['Ce champ est obligatoire.']}, status=status.HTTP_400_BAD_REQUEST)
+        if not phone:
+            return Response({'phone': ['Ce champ est obligatoire.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create or get customer
+        customer, _ = Customer.objects.get_or_create(
+            phone=phone,
+            defaults={
+                'full_name': full_name,
+                'whatsapp_number': whatsapp_number,
+                'email': email,
+                'preferred_language': 'fr',
+            }
+        )
+        # Update customer if needed
+        if customer.full_name != full_name or customer.email != email:
+            customer.full_name = full_name
+            customer.email = email
+            customer.whatsapp_number = whatsapp_number
+            customer.save()
+
+        # Now proceed with standard creation
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ref = generate_reference_code()
+        self.perform_create(serializer, customer=customer, reference_code=ref)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            {**serializer.data, 'reference_code': ref},
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
+
+    def perform_create(self, serializer, customer=None, reference_code=None):
+        # Photos are persisted by the serializer's `create()` from validated data,
+        # so we only need to attach the customer and the generated reference code here.
+        return serializer.save(customer=customer, reference_code=reference_code)
+
+class PublicTransportRequestDetailView(generics.RetrieveAPIView):
+    queryset = TransportRequest.objects.all()
+    serializer_class = TransportRequestDetailSerializer
+    permission_classes = []
+    lookup_field = 'reference_code'
+    lookup_url_kwarg = 'reference_code'
+
+class AdminTransportRequestListView(generics.ListAPIView):
+    serializer_class = TransportRequestListSerializer
+    permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
+    pagination_class = StandardPagination
+    filterset_class = TransportRequestFilter
+    search_fields = ['reference_code', 'customer__full_name', 'pickup_city']
+    ordering_fields = ['created_at', 'preferred_pickup_date', 'status']
+
+    def get_queryset(self):
+        return TransportRequest.objects.select_related('customer', 'destination_city').all()
+
+class AdminTransportRequestDetailView(generics.RetrieveUpdateAPIView):
+    queryset = TransportRequest.objects.all()
+    serializer_class = TransportRequestDetailSerializer
+    permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
+
+class AdminTransportRequestStatusUpdateView(generics.UpdateAPIView):
+    serializer_class = TransportRequestStatusSerializer
+    permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
+    queryset = TransportRequest.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        new_status = serializer.validated_data['status']
+        allowed = ALLOWED_STATUS_TRANSITIONS.get(instance.status, [])
+        if new_status not in allowed:
+            return Response(
+                {'detail': f'Transition from {instance.status} to {new_status} not allowed.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        instance.status = new_status
+        if serializer.validated_data.get('internal_notes'):
+            instance.internal_notes = serializer.validated_data['internal_notes']
+        instance.save()
+        # Trigger push notification (async)
+        send_status_change_notification.delay(instance.id)
+        return Response(TransportRequestDetailSerializer(instance).data)
+    
+
+class AdminTransportRequestExportCSVView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
+
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="requests.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Reference', 'Client', 'Phone', 'Pickup City', 'Destination', 'Status', 'Created At'])
+        qs = TransportRequest.objects.select_related('customer', 'destination_city').all()
+        for req in qs:
+            writer.writerow([
+                req.reference_code,
+                req.customer.full_name if req.customer else '',
+                req.customer.phone if req.customer else '',
+                req.pickup_city,
+                req.destination_city.name if req.destination_city else '',
+                req.get_status_display(),
+                req.created_at.strftime('%Y-%m-%d %H:%M'),
+            ])
+        return response
+    
+
+class CustomerRequestListView(generics.ListAPIView):
+    serializer_class = TransportRequestListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        customer = getattr(self.request.user, 'customer_profile', None)
+        if not customer:
+            return TransportRequest.objects.none()
+        return TransportRequest.objects.filter(customer=customer)

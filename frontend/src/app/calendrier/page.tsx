@@ -3,6 +3,9 @@ import type { PickupSchedule, LoadingDate } from "@/types/api";
 import PickupScheduleCard from "@/components/public/PickupScheduleCard";
 import { CalendarCheck } from "lucide-react";
 
+// Render at request time so public data is always live and never baked at build time.
+export const dynamic = "force-dynamic";
+
 export default async function CalendrierPage() {
   let schedules: PickupSchedule[] = [];
   let loadingDates: LoadingDate[] = [];

@@ -10,6 +10,9 @@ const iconMap: Record<string, LucideIcon> = {
   "help-circle": HelpCircle,
 };
 
+// Render at request time so public data is always live and never baked at build time.
+export const dynamic = "force-dynamic";
+
 export default async function ServicesPage() {
   let services: ServiceType[] = [];
   try {

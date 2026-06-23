@@ -1,0 +1,1 @@
+urlpatterns = []  # Extended later if needed

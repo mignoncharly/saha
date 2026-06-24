@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Brand mark: rounded square reads better than a circle at favicon sizes -->
+  <rect width="512" height="512" rx="112" fill="#0D47A1" />
+  <!-- Gold accent dot (brand) -->
+  <circle cx="256" cy="120" r="46" fill="#F9A825" />
+  <!-- Monogram, sized to stay legible down to 16px -->
+  <text x="256" y="358" font-family="Arial, Helvetica, sans-serif" font-size="210"
+        font-weight="700" letter-spacing="-6" fill="#FFFFFF" text-anchor="middle">STL</text>
+</svg>

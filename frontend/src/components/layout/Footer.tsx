@@ -84,7 +84,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="container-page flex flex-col items-center justify-between gap-3 py-5 text-xs text-navy-300 sm:flex-row">
+        <div className="container-page flex flex-col items-center justify-between gap-3 pt-5 pb-24 text-xs text-navy-300 sm:flex-row lg:pb-5">
           <p>
             &copy; {new Date().getFullYear()} SAHA Transport &amp; Logistics. {t("footer.rights")}
           </p>

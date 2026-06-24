@@ -13,12 +13,25 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
+// Thrown when the browser context cannot support push (e.g. served over
+// plain HTTP, or an old browser). Lets the UI show a specific message.
+export class PushUnsupportedError extends Error {
+  constructor() {
+    super("Push not supported");
+    this.name = "PushUnsupportedError";
+  }
+}
+
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission | "prompt">("prompt");
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [supported, setSupported] = useState(true);
 
   useEffect(() => {
-    if ("Notification" in window) {
+    const isSupported =
+      "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
+    setSupported(isSupported);
+    if (isSupported) {
       setPermission(Notification.permission);
       navigator.serviceWorker.ready.then((reg) =>
         reg.pushManager.getSubscription().then((sub) => setIsSubscribed(!!sub))
@@ -27,8 +40,8 @@ export function usePushNotifications() {
   }, []);
 
   const subscribe = useCallback(async () => {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      throw new Error("Push not supported");
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+      throw new PushUnsupportedError();
     }
     const perm = await Notification.requestPermission();
     setPermission(perm);
@@ -64,5 +77,5 @@ export function usePushNotifications() {
     setIsSubscribed(true);
   }, []);
 
-  return { permission, subscribe, isSubscribed };
+  return { permission, subscribe, isSubscribed, supported };
 }

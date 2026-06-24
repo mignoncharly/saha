@@ -5,6 +5,8 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import MobileBottomCTA from "@/components/layout/MobileBottomCTA";
 import { AuthProvider } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/lib/i18n";
+import { Toaster } from "sonner";
 import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistration";
 import InstallPWAButton from "@/components/pwa/InstallPWAButton";
 
@@ -32,14 +34,17 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={inter.className}>
-        <AuthProvider>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <MobileBottomCTA />
-          <ServiceWorkerRegistration />
-          <InstallPWAButton />
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <Header />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+            <MobileBottomCTA />
+            <ServiceWorkerRegistration />
+            <InstallPWAButton />
+            <Toaster position="top-center" richColors />
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

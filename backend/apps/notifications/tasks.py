@@ -7,12 +7,28 @@ import json
 
 @shared_task
 def send_broadcast_notification(notification_log_id):
-    # ... (unchanged, same as before)
+    from .models import CustomerNotification, NotificationPreference
     log = NotificationLog.objects.get(id=notification_log_id)
     if log.target_type == 'region':
         subs = PushSubscription.objects.filter(active=True, region__icontains=log.target_region)
     else:
         subs = PushSubscription.objects.filter(active=True)
+
+    # Customers who opted out of pickup alerts are excluded from this broadcast.
+    opted_out = set(
+        NotificationPreference.objects.filter(pickup_alerts=False).values_list('customer_id', flat=True)
+    )
+
+    # Record in-app history for each targeted customer (once), respecting opt-out.
+    customer_ids = {
+        cid for cid in subs.exclude(customer=None).values_list('customer_id', flat=True)
+        if cid not in opted_out
+    }
+    if customer_ids:
+        CustomerNotification.objects.bulk_create([
+            CustomerNotification(customer_id=cid, title=log.title, body=log.body)
+            for cid in customer_ids
+        ])
 
     payload = json.dumps({
         "title": log.title,
@@ -22,6 +38,8 @@ def send_broadcast_notification(notification_log_id):
     sent = 0
     failed = 0
     for sub in subs:
+        if sub.customer_id and sub.customer_id in opted_out:
+            continue
         try:
             success = send_web_push(
                 {"endpoint": sub.endpoint, "p256dh": sub.p256dh, "auth": sub.auth},
@@ -41,43 +59,57 @@ def send_broadcast_notification(notification_log_id):
 @shared_task
 def send_status_change_notification(request_id):
     from apps.logistics.models import TransportRequest
+    from .models import CustomerNotification, NotificationPreference
     try:
         req = TransportRequest.objects.select_related('customer').get(id=request_id)
-        customer = req.customer
-        if not customer:
-            return
-        subs = PushSubscription.objects.filter(customer=customer, active=True)
-        if not subs:
-            return
-        status_label = dict(TransportRequest.STATUS_CHOICES).get(req.status, req.status)
-        payload = json.dumps({
-            "title": f"STL – Demande {req.reference_code}",
-            "body": f"Statut mis à jour : {status_label}",
-            "icon": "/icons/icon-192.png",
-        })
-        sent = 0
-        failed = 0
-        for sub in subs:
-            try:
-                success = send_web_push(
-                    {"endpoint": sub.endpoint, "p256dh": sub.p256dh, "auth": sub.auth},
-                    payload
-                )
-                if success:
-                    sent += 1
-                else:
-                    failed += 1
-            except Exception:
-                failed += 1
-        NotificationLog.objects.create(
-            title=f"Status update {req.reference_code}",
-            body=f"{status_label}",
-            target_type='request_status',
-            sent_count=sent,
-            failed_count=failed,
-        )
     except TransportRequest.DoesNotExist:
-        pass
+        return
+    customer = req.customer
+    if not customer:
+        return
+    status_label = dict(TransportRequest.STATUS_CHOICES).get(req.status, req.status)
+    title = f"Demande {req.reference_code}"
+    body = f"Statut mis à jour : {status_label}"
+
+    # Always record in-app history so the customer sees it in their center.
+    CustomerNotification.objects.create(
+        customer=customer, title=title, body=body, reference_code=req.reference_code,
+    )
+
+    # Push delivery honors the customer's status-update preference.
+    pref = NotificationPreference.objects.filter(customer=customer).first()
+    if pref and not pref.status_updates:
+        return
+
+    subs = PushSubscription.objects.filter(customer=customer, active=True)
+    if not subs:
+        return
+    payload = json.dumps({
+        "title": f"STL – {title}",
+        "body": body,
+        "icon": "/icons/icon-192.png",
+    })
+    sent = 0
+    failed = 0
+    for sub in subs:
+        try:
+            success = send_web_push(
+                {"endpoint": sub.endpoint, "p256dh": sub.p256dh, "auth": sub.auth},
+                payload,
+            )
+            if success:
+                sent += 1
+            else:
+                failed += 1
+        except Exception:
+            failed += 1
+    NotificationLog.objects.create(
+        title=f"Status update {req.reference_code}",
+        body=f"{status_label}",
+        target_type='request_status',
+        sent_count=sent,
+        failed_count=failed,
+    )
 
 @shared_task
 def send_verification_email(user_id, token):

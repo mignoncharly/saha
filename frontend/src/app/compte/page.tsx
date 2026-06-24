@@ -176,11 +176,16 @@ export default function AccountPage() {
               <div>
                 <p className="font-semibold text-gray-900">Alertes de ramassage</p>
                 <p className="text-sm text-gray-600">
-                  Activez les notifications push pour être informé des dates de chargement et du suivi de vos demandes.
+                  Activez les notifications push et gérez vos préférences et votre historique.
                 </p>
               </div>
             </div>
-            <NotificationPermissionButton />
+            <div className="flex flex-wrap items-center gap-3">
+              <NotificationPermissionButton />
+              <Link href="/compte/notifications" className="btn-secondary">
+                Gérer
+              </Link>
+            </div>
           </div>
         </section>
       </div>

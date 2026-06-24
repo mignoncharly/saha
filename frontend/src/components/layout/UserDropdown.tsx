@@ -7,15 +7,16 @@ import {
   ChevronDown,
   LayoutDashboard,
   Truck,
+  Bell,
   LogOut,
   LogIn,
   UserPlus,
   Download,
 } from "lucide-react";
-import NotificationPermissionButton from "@/components/pwa/NotificationPermissionButton";
 import { useAuth, userDisplayName } from "@/hooks/useAuth";
 import { useTranslation } from "@/lib/i18n";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { resolveRole } from "@/lib/navigation";
 
 export default function UserDropdown() {
@@ -23,6 +24,7 @@ export default function UserDropdown() {
   const { t } = useTranslation();
   const router = useRouter();
   const { canInstall, promptInstall } = useInstallPrompt();
+  const { unread } = useUnreadCount();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const role = resolveRole(user?.role);
@@ -63,8 +65,9 @@ export default function UserDropdown() {
         aria-expanded={open}
         className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:text-brand-blue"
       >
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue">
+        <span className="relative flex h-6 w-6 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue">
           <User className="h-3.5 w-3.5" />
+          {unread > 0 && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-brand-red ring-2 ring-white" aria-label={`${unread} non lues`} />}
         </span>
         <span className="max-w-[8rem] truncate">
           {user ? userDisplayName(user, t("account.myAccount")) : t("account.login")}
@@ -105,9 +108,10 @@ export default function UserDropdown() {
               <Link href="/suivi" onClick={close} className={itemClass} role="menuitem">
                 <Truck className="h-4 w-4" /> {t("account.myRequests")}
               </Link>
-              <div className="px-1 py-1" role="menuitem">
-                <NotificationPermissionButton className="w-full justify-center" />
-              </div>
+              <Link href="/compte/notifications" onClick={close} className={itemClass} role="menuitem">
+                <Bell className="h-4 w-4" /> Notifications
+                {unread > 0 && <span className="ml-auto badge bg-brand-red text-white">{unread}</span>}
+              </Link>
             </>
           )}
 

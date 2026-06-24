@@ -40,6 +40,23 @@ export interface DestinationCity {
   country: string;
 }
 
+export interface CustomerNotification {
+  id: number;
+  title: string;
+  body: string;
+  reference_code: string;
+  read: boolean;
+  created_at: string;
+}
+
+export interface NotificationPreference {
+  language: string;
+  regions: string;
+  status_updates: boolean;
+  pickup_alerts: boolean;
+  updated_at: string;
+}
+
 export interface DashboardStats {
   total_requests: number;
   new_requests: number;

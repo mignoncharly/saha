@@ -1,10 +1,13 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { whatsappLink } from "@/lib/whatsapp";
 import { useTranslation } from "@/lib/i18n";
 
 export default function Footer() {
   const { t } = useTranslation();
+  const pathname = usePathname();
+  if (pathname.startsWith("/admin")) return null;
 
   return (
     <footer className="bg-gray-900 text-gray-300">

@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
-import Header from "@/components/layout/Header";
+import AppNavbar from "@/components/layout/AppNavbar";
 import Footer from "@/components/layout/Footer";
 import MobileBottomCTA from "@/components/layout/MobileBottomCTA";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -23,7 +23,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#C62828",
+  themeColor: "#0A2540",
 };
 
 export default function RootLayout({
@@ -36,7 +36,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <LanguageProvider>
           <AuthProvider>
-            <Header />
+            <AppNavbar />
             <main className="min-h-screen">{children}</main>
             <Footer />
             <MobileBottomCTA />

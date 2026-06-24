@@ -1,29 +1,50 @@
 "use client";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import AdminSidebar from "./AdminSidebar";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import LoadingState from "@/components/ui/LoadingState";
+import ErrorState from "@/components/ui/ErrorState";
+import { resolveRole } from "@/lib/navigation";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const role = resolveRole(user?.role);
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/admin/login");
+      router.replace("/admin/login");
     }
   }, [user, loading, router]);
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen"><LoadingSpinner className="h-10 w-10" /></div>;
+    return <LoadingState fullPage label="Vérification de l'accès…" />;
   }
   if (!user) return null;
 
+  // Logged in but not an admin/staff member: deny access cleanly.
+  if (role !== "admin") {
+    return (
+      <div className="container-page py-20">
+        <ErrorState
+          title="Accès refusé"
+          message="Votre compte n'a pas les autorisations nécessaires pour accéder à l'espace administrateur."
+          action={
+            <Link href="/" className="btn-primary">
+              Retour à l&apos;accueil
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      <main className="flex-1 bg-gray-50 p-6">{children}</main>
+      <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
     </div>
   );
 }

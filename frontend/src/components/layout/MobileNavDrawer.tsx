@@ -6,6 +6,7 @@ import {
   X,
   User,
   Truck,
+  Bell,
   LayoutDashboard,
   LogIn,
   UserPlus,
@@ -14,18 +15,19 @@ import {
 } from "lucide-react";
 import NavLink from "@/components/layout/NavLink";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
-import NotificationPermissionButton from "@/components/pwa/NotificationPermissionButton";
 import WhatsAppCTA from "@/components/public/WhatsAppCTA";
 import { mainNav, resolveRole } from "@/lib/navigation";
 import { useAuth, userDisplayName } from "@/hooks/useAuth";
 import { useTranslation } from "@/lib/i18n";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import { useUnreadCount } from "@/hooks/useUnreadCount";
 
 export default function MobileNavDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
   const { canInstall, promptInstall } = useInstallPrompt();
+  const { unread } = useUnreadCount();
   const role = resolveRole(user?.role);
 
   // Lock body scroll + close on Escape while the drawer is open.
@@ -103,9 +105,10 @@ export default function MobileNavDrawer({ open, onClose }: { open: boolean; onCl
               <Link href="/suivi" onClick={onClose} className={rowClass}>
                 <Truck className="h-5 w-5" /> {t("account.myRequests")}
               </Link>
-              <div className="px-3 py-2">
-                <NotificationPermissionButton className="w-full justify-center" />
-              </div>
+              <Link href="/compte/notifications" onClick={onClose} className={rowClass}>
+                <Bell className="h-5 w-5" /> Notifications
+                {unread > 0 && <span className="ml-auto badge bg-brand-red text-white">{unread}</span>}
+              </Link>
             </div>
           )}
 

@@ -3,10 +3,21 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.conf import settings
-from .models import PushSubscription, NotificationLog
-from .serializers import PushSubscriptionSerializer, BroadcastSerializer
+from .models import PushSubscription, NotificationLog, CustomerNotification, NotificationPreference
+from .serializers import (
+    PushSubscriptionSerializer,
+    BroadcastSerializer,
+    CustomerNotificationSerializer,
+    NotificationPreferenceSerializer,
+)
 from .tasks import send_broadcast_notification
 from apps.core.permissions import IsStaffOrAdmin
+
+
+def _customer_of(request):
+    """Return the customer profile linked to the request user, or None."""
+    user = request.user
+    return getattr(user, 'customer_profile', None) if user.is_authenticated else None
 
 class PushSubscriptionCreateView(generics.CreateAPIView):
     serializer_class = PushSubscriptionSerializer
@@ -43,3 +54,69 @@ class AdminBroadcastView(generics.GenericAPIView):
         )
         send_broadcast_notification.delay(log.id)
         return Response({'detail': 'Notification envoyée en arrière-plan.', 'log_id': log.id}, status=status.HTTP_201_CREATED)
+
+
+# ---- Customer notification center ----
+
+class CustomerNotificationListView(APIView):
+    """History of the logged-in customer's notifications + unread count."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        customer = _customer_of(request)
+        if not customer:
+            return Response({'unread': 0, 'results': []})
+        qs = customer.notifications.all()[:50]
+        unread = customer.notifications.filter(read=False).count()
+        return Response({
+            'unread': unread,
+            'results': CustomerNotificationSerializer(qs, many=True).data,
+        })
+
+
+class CustomerNotificationUnreadCountView(APIView):
+    """Lightweight unread count for the navbar badge."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        customer = _customer_of(request)
+        unread = customer.notifications.filter(read=False).count() if customer else 0
+        return Response({'unread': unread})
+
+
+class CustomerNotificationMarkReadView(APIView):
+    """Mark notifications as read. Optional body {"ids": [...]}; defaults to all."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        customer = _customer_of(request)
+        if not customer:
+            return Response({'unread': 0})
+        qs = customer.notifications.filter(read=False)
+        ids = request.data.get('ids')
+        if ids:
+            qs = qs.filter(id__in=ids)
+        qs.update(read=True)
+        return Response({'unread': customer.notifications.filter(read=False).count()})
+
+
+class NotificationPreferenceView(APIView):
+    """Get or update the logged-in customer's notification preferences."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        customer = _customer_of(request)
+        if not customer:
+            return Response({'detail': "Aucun profil client."}, status=status.HTTP_404_NOT_FOUND)
+        pref, _ = NotificationPreference.objects.get_or_create(customer=customer)
+        return Response(NotificationPreferenceSerializer(pref).data)
+
+    def put(self, request):
+        customer = _customer_of(request)
+        if not customer:
+            return Response({'detail': "Aucun profil client."}, status=status.HTTP_404_NOT_FOUND)
+        pref, _ = NotificationPreference.objects.get_or_create(customer=customer)
+        serializer = NotificationPreferenceSerializer(pref, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

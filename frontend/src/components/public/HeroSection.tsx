@@ -34,7 +34,7 @@ export default function HeroSection({ nextLoading }: { nextLoading?: LoadingDate
       <div className="container-page relative py-16 sm:py-20">
         {/* Full-width announcement above the two-column hero content */}
         {announcement && (
-          <div className="shipment-ticker" role="status" aria-label={announcement}>
+          <div className="shipment-ticker -mt-6 sm:-mt-10" role="status" aria-label={announcement}>
             <div className="shipment-ticker__track" aria-hidden="true">
               <span className="shipment-ticker__item">{announcement}</span>
               <span className="shipment-ticker__item">{announcement}</span>

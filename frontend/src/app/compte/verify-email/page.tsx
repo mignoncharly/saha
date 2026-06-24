@@ -1,33 +1,78 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { CheckCircle, XCircle } from "lucide-react";
 import { api } from "@/lib/api";
+import AuthCard from "@/components/auth/AuthCard";
+import LoadingState from "@/components/ui/LoadingState";
+
+type Status = "loading" | "success" | "error";
 
 function VerifyEmailInner() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const [status, setStatus] = useState("loading");
+  const [status, setStatus] = useState<Status>("loading");
 
   useEffect(() => {
     if (!token) {
       setStatus("error");
       return;
     }
-    api.get(`/auth/verify-email/?token=${token}`).then(() => setStatus("success")).catch(() => setStatus("error"));
+    api
+      .get(`/auth/verify-email/?token=${token}`)
+      .then(() => setStatus("success"))
+      .catch(() => setStatus("error"));
   }, [token]);
 
+  if (status === "loading") {
+    return (
+      <AuthCard title="Vérification en cours" subtitle="Nous vérifions votre adresse email…">
+        <LoadingState label="Veuillez patienter…" />
+      </AuthCard>
+    );
+  }
+
+  if (status === "success") {
+    return (
+      <AuthCard
+        icon={<CheckCircle className="h-6 w-6" />}
+        title="Email vérifié !"
+        subtitle="Votre adresse email a bien été confirmée."
+        footer={
+          <Link href="/compte/connexion" className="font-semibold text-brand-blue hover:underline">
+            Se connecter
+          </Link>
+        }
+      >
+        <p className="rounded-lg bg-green-50 p-4 text-center text-sm text-green-700">
+          Vous pouvez maintenant profiter pleinement de votre espace STL.
+        </p>
+      </AuthCard>
+    );
+  }
+
   return (
-    <div className="max-w-md mx-auto px-4 py-20 text-center">
-      {status === "loading" && <p>Vérification de votre email...</p>}
-      {status === "success" && <div className="text-green-600"><h1 className="text-2xl font-bold">Email vérifié !</h1><p>Vous pouvez maintenant vous connecter.</p></div>}
-      {status === "error" && <div className="text-red-500"><h1 className="text-2xl font-bold">Échec de vérification</h1><p>Le lien est invalide ou expiré.</p></div>}
-    </div>
+    <AuthCard
+      icon={<XCircle className="h-6 w-6" />}
+      title="Échec de la vérification"
+      subtitle="Le lien est invalide ou a expiré."
+      footer={
+        <Link href="/compte" className="font-semibold text-brand-blue hover:underline">
+          Aller à mon espace
+        </Link>
+      }
+    >
+      <p className="rounded-lg bg-red-50 p-4 text-center text-sm text-red-700">
+        Connectez-vous à votre espace pour renvoyer un email de vérification.
+      </p>
+    </AuthCard>
   );
 }
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div className="max-w-md mx-auto px-4 py-20 text-center text-gray-500">Chargement...</div>}>
+    <Suspense fallback={<LoadingState fullPage />}>
       <VerifyEmailInner />
     </Suspense>
   );

@@ -1,7 +1,15 @@
 "use client";
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { toast } from "sonner";
+import { KeyRound, CheckCircle } from "lucide-react";
 import { api } from "@/lib/api";
+import AuthCard from "@/components/auth/AuthCard";
+import FormField from "@/components/ui/FormField";
+import PasswordInput from "@/components/ui/PasswordInput";
+import LoadingState from "@/components/ui/LoadingState";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 function ResetPasswordInner() {
   const searchParams = useSearchParams();
@@ -21,7 +29,8 @@ function ResetPasswordInner() {
     try {
       await api.post("/auth/password-reset/confirm/", { uid, token, new_password: newPassword });
       setSuccess(true);
-      setTimeout(() => router.push("/compte/connexion"), 3000);
+      toast.success("Mot de passe réinitialisé.");
+      setTimeout(() => router.push("/compte/connexion"), 2500);
     } catch {
       setError("Erreur lors de la réinitialisation. Le lien est peut-être expiré.");
     } finally {
@@ -30,43 +39,51 @@ function ResetPasswordInner() {
   };
 
   if (!uid || !token) {
-    return <div className="max-w-md mx-auto px-4 py-20 text-center text-red-500">Lien invalide ou expiré.</div>;
+    return (
+      <AuthCard
+        title="Lien invalide"
+        subtitle="Ce lien de réinitialisation est invalide ou a expiré."
+        footer={
+          <Link href="/compte/mot-de-passe-oublie" className="font-semibold text-brand-blue hover:underline">
+            Demander un nouveau lien
+          </Link>
+        }
+      >
+        <p className="rounded-lg bg-red-50 p-4 text-center text-sm text-red-700">
+          Veuillez relancer la procédure de réinitialisation.
+        </p>
+      </AuthCard>
+    );
   }
+
   if (success) {
     return (
-      <div className="max-w-md mx-auto px-4 py-20 text-center text-green-600">
-        Mot de passe réinitialisé. Redirection...
-      </div>
+      <AuthCard icon={<CheckCircle className="h-6 w-6" />} title="Mot de passe réinitialisé" subtitle="Redirection vers la connexion…">
+        <p className="rounded-lg bg-green-50 p-4 text-center text-sm text-green-700">
+          Votre mot de passe a été mis à jour avec succès.
+        </p>
+      </AuthCard>
     );
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-20">
-      <div className="card">
-        <h1 className="text-2xl font-bold mb-4">Nouveau mot de passe</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <p className="text-red-500">{error}</p>}
-          <input
-            type="password"
-            placeholder="Nouveau mot de passe"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-            minLength={8}
-            className="w-full border p-2 rounded"
-          />
-          <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-60">
-            {loading ? "Réinitialisation..." : "Réinitialiser"}
-          </button>
-        </form>
-      </div>
-    </div>
+    <AuthCard icon={<KeyRound className="h-6 w-6" />} title="Nouveau mot de passe" subtitle="Choisissez un nouveau mot de passe pour votre compte.">
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        {error && <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        <FormField label="Nouveau mot de passe" htmlFor="new_password" required hint="Au moins 8 caractères.">
+          <PasswordInput id="new_password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={8} />
+        </FormField>
+        <button type="submit" disabled={loading} className="btn-primary w-full">
+          {loading ? <LoadingSpinner className="h-5 w-5" /> : "Réinitialiser"}
+        </button>
+      </form>
+    </AuthCard>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="max-w-md mx-auto px-4 py-20 text-center text-gray-500">Chargement...</div>}>
+    <Suspense fallback={<LoadingState fullPage />}>
       <ResetPasswordInner />
     </Suspense>
   );

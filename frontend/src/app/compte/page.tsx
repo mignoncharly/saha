@@ -2,9 +2,21 @@
 import { useAuth, userDisplayName } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { toast } from "sonner";
+import { Truck, Package, Bell, CalendarDays, ArrowRight, MailWarning, LogOut, Plus } from "lucide-react";
 import { api } from "@/lib/api";
 import type { TransportRequestListItem } from "@/types/request";
-import Link from "next/link";
+import LoadingState from "@/components/ui/LoadingState";
+import EmptyState from "@/components/ui/EmptyState";
+import StatusBadge from "@/components/ui/StatusBadge";
+import NotificationPermissionButton from "@/components/pwa/NotificationPermissionButton";
+
+const quickActions = [
+  { href: "/demande", label: "Demander un ramassage", icon: Truck, accent: "bg-brand-red/10 text-brand-red" },
+  { href: "/suivi", label: "Mes demandes", icon: Package, accent: "bg-brand-blue/10 text-brand-blue" },
+  { href: "/calendrier", label: "Calendrier", icon: CalendarDays, accent: "bg-brand-gold/10 text-brand-gold" },
+];
 
 export default function AccountPage() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -12,6 +24,7 @@ export default function AccountPage() {
   const [requests, setRequests] = useState<TransportRequestListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -27,49 +40,150 @@ export default function AccountPage() {
       .finally(() => setLoading(false));
   }, [user, authLoading, router]);
 
-  if (authLoading || !user) {
-    return <div className="max-w-4xl mx-auto px-4 py-12 text-gray-500">Chargement...</div>;
-  }
+  const resendVerification = async () => {
+    setResending(true);
+    try {
+      await api.post("/auth/resend-verification/", {});
+      toast.success("Email de vérification renvoyé.");
+    } catch {
+      toast.error("Impossible de renvoyer l'email pour le moment.");
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
+
+  if (authLoading || !user) return <LoadingState fullPage />;
+
+  const recent = requests.slice(0, 5);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Mon compte</h1>
-        <button onClick={logout} className="text-sm text-brand-blue underline">
-          Se déconnecter
-        </button>
-      </div>
-      <p>Bienvenue, {userDisplayName(user, user.email)}</p>
-      <h2 className="text-xl font-semibold mt-8 mb-4">Mes demandes</h2>
-      {loading ? (
-        <p className="text-gray-500">Chargement...</p>
-      ) : error ? (
-        <p className="text-red-600">{error}</p>
-      ) : requests.length === 0 ? (
-        <p className="text-gray-500">Aucune demande pour le moment.</p>
-      ) : (
-        <div className="space-y-4">
-          {requests.map((req) => (
-            <Link
-              key={req.id}
-              href={`/suivi?ref=${req.reference_code}`}
-              className="block card hover:shadow-md"
-            >
-              <div className="flex justify-between">
-                <span className="font-mono">{req.reference_code}</span>
-                <span className="text-sm bg-gray-100 px-2 py-1 rounded">{req.status}</span>
-              </div>
-              <p className="text-sm text-gray-600">
-                Ramassage: {req.pickup_city}
-                {req.destination_name ? ` → ${req.destination_name}` : ""}
-              </p>
-              <p className="text-xs text-gray-400">
-                {new Date(req.created_at).toLocaleDateString("fr-FR")}
-              </p>
+    <>
+      <section className="bg-gradient-to-br from-brand-blue to-navy-900 text-white">
+        <div className="container-page flex flex-col gap-4 py-10 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-blue-100">Bienvenue,</p>
+            <h1 className="font-display text-3xl font-bold capitalize">{userDisplayName(user, "Mon espace")}</h1>
+            <p className="mt-1 text-sm text-blue-100">{user.email}</p>
+          </div>
+          <div className="flex gap-3">
+            <Link href="/demande" className="btn-primary !px-5 !py-2.5">
+              <Plus className="h-4 w-4" /> Nouvelle demande
             </Link>
-          ))}
+            <button onClick={handleLogout} className="btn !border !border-white/30 !bg-transparent !text-white hover:!bg-white/10">
+              <LogOut className="h-4 w-4" /> Déconnexion
+            </button>
+          </div>
         </div>
-      )}
-    </div>
+      </section>
+
+      <div className="container-page space-y-10 py-10">
+        {/* Email verification banner */}
+        {user.email_verified === false && (
+          <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <MailWarning className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+              <div>
+                <p className="font-semibold text-amber-900">Vérifiez votre adresse email</p>
+                <p className="text-sm text-amber-800">Confirmez votre email pour sécuriser votre compte.</p>
+              </div>
+            </div>
+            <button onClick={resendVerification} disabled={resending} className="btn-secondary shrink-0">
+              {resending ? "Envoi…" : "Renvoyer l'email"}
+            </button>
+          </div>
+        )}
+
+        {/* Quick actions */}
+        <section>
+          <h2 className="mb-4 text-lg font-bold text-gray-900">Actions rapides</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {quickActions.map(({ href, label, icon: Icon, accent }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-5 shadow-card transition-shadow hover:shadow-soft"
+              >
+                <span className="flex items-center gap-3 font-semibold text-gray-900">
+                  <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${accent}`}>
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  {label}
+                </span>
+                <ArrowRight className="h-5 w-5 text-gray-400" />
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Recent requests */}
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-900">Mes demandes récentes</h2>
+            {requests.length > 0 && (
+              <Link href="/suivi" className="text-sm font-semibold text-brand-blue hover:underline">
+                Tout voir
+              </Link>
+            )}
+          </div>
+
+          {loading ? (
+            <LoadingState label="Chargement de vos demandes…" />
+          ) : error ? (
+            <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">{error}</p>
+          ) : recent.length === 0 ? (
+            <EmptyState
+              icon={<Package className="h-7 w-7" />}
+              title="Aucune demande pour le moment"
+              description="Faites votre première demande de ramassage et suivez-la ici."
+              action={<Link href="/demande" className="btn-primary">Demander un ramassage</Link>}
+            />
+          ) : (
+            <div className="space-y-3">
+              {recent.map((r) => (
+                <Link
+                  key={r.id}
+                  href={`/suivi?ref=${r.reference_code}`}
+                  className="block rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition-shadow hover:shadow-soft"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-mono font-semibold text-gray-900">{r.reference_code}</span>
+                    <StatusBadge status={r.status} />
+                  </div>
+                  <p className="mt-1 text-sm text-gray-600">
+                    {r.pickup_city}
+                    {r.destination_name ? ` → ${r.destination_name}` : ""}
+                  </p>
+                  <p className="mt-0.5 text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString("fr-FR")}</p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Notifications */}
+        <section>
+          <h2 className="mb-4 text-lg font-bold text-gray-900">Notifications</h2>
+          <div className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-gold/10 text-brand-gold">
+                <Bell className="h-6 w-6" />
+              </span>
+              <div>
+                <p className="font-semibold text-gray-900">Alertes de ramassage</p>
+                <p className="text-sm text-gray-600">
+                  Activez les notifications push pour être informé des dates de chargement et du suivi de vos demandes.
+                </p>
+              </div>
+            </div>
+            <NotificationPermissionButton />
+          </div>
+        </section>
+      </div>
+    </>
   );
 }

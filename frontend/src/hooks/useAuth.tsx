@@ -8,6 +8,7 @@ interface User {
   email: string;
   role: string;
   full_name?: string;
+  email_verified?: boolean;
 }
 
 interface RegisterPayload {

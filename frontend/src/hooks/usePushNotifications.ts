@@ -47,7 +47,19 @@ export function usePushNotifications() {
     setPermission(perm);
     if (perm !== "granted") throw new Error("Permission denied");
 
-    const registration = await navigator.serviceWorker.ready;
+    // Make sure a service worker exists before waiting on `.ready`, otherwise
+    // `.ready` can hang forever and the click appears to do nothing.
+    let registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) {
+      registration = await navigator.serviceWorker.register("/sw.js");
+    }
+    // Wait until the SW is active, but never hang silently.
+    registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<ServiceWorkerRegistration>((_, reject) =>
+        setTimeout(() => reject(new Error("Service worker not ready (timeout)")), 8000)
+      ),
+    ]);
     let subscription = await registration.pushManager.getSubscription();
     if (subscription) {
       setIsSubscribed(true);

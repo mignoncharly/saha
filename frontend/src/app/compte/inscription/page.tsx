@@ -1,23 +1,31 @@
 "use client";
 import { useState } from "react";
-import { api, parseApiError } from "@/lib/api";
-import { setToken } from "@/lib/auth";
+import { toast } from "sonner";
+import { parseApiError } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ email: "", password: "", full_name: "", phone: "" });
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { register } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSubmitting(true);
     try {
-      const res = await api.post<{ token: string }>("/auth/register/", form);
-      setToken(res.token);
+      await register(form);
+      toast.success("Compte créé ! Un email de vérification vous a été envoyé.");
       router.push("/compte");
     } catch (err) {
-      setError(parseApiError(err, "Erreur lors de l'inscription."));
+      const message = parseApiError(err, "Erreur lors de l'inscription.");
+      setError(message);
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -31,7 +39,9 @@ export default function RegisterPage() {
           <input type="email" placeholder="Email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required className="w-full border p-2 rounded" />
           <input type="password" placeholder="Mot de passe" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required className="w-full border p-2 rounded" />
           <input placeholder="Téléphone" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="w-full border p-2 rounded" />
-          <button type="submit" className="btn-primary w-full">S'inscrire</button>
+          <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">
+            {submitting ? "Création..." : "S'inscrire"}
+          </button>
         </form>
       </div>
     </div>

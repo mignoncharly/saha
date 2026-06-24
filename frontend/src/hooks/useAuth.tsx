@@ -9,10 +9,18 @@ interface User {
   role: string;
 }
 
+interface RegisterPayload {
+  email: string;
+  password: string;
+  full_name: string;
+  phone?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<void>;
   logout: () => void;
 }
 
@@ -41,13 +49,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.user);
   };
 
+  const register = async (payload: RegisterPayload) => {
+    const res = await api.post<{ token: string; user: User }>("/auth/register/", payload);
+    setToken(res.token);
+    setUser(res.user);
+  };
+
   const logout = () => {
     removeToken();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

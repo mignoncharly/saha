@@ -55,7 +55,7 @@ export default function ContactPage() {
               </div>
             </a>
             <a
-              href="mailto:contact@sahatransport.com"
+              href="mailto:info@gestionatech.de"
               className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-5 shadow-card transition-shadow hover:shadow-soft"
             >
               <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
@@ -63,7 +63,7 @@ export default function ContactPage() {
               </span>
               <div>
                 <p className="text-sm font-semibold text-gray-900">Email</p>
-                <p className="break-all text-sm text-gray-500">contact@sahatransport.com</p>
+                <p className="break-all text-sm text-gray-500">info@gestionatech.de</p>
               </div>
             </a>
           </div>

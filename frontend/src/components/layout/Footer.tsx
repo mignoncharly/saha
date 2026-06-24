@@ -75,10 +75,10 @@ export default function Footer() {
             ))}
           </ul>
           <a
-            href="mailto:contact@sahatransport.com"
+            href="mailto:info@gestionatech.de"
             className="mt-5 inline-flex items-center gap-2 text-sm text-navy-200 transition-colors hover:text-white"
           >
-            <Mail className="h-4 w-4 text-brand-gold" /> contact@sahatransport.com
+            <Mail className="h-4 w-4 text-brand-gold" /> info@gestionatech.de
           </a>
         </div>
       </div>

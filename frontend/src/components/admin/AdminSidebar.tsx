@@ -1,47 +1,66 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, ClipboardList, DollarSign, Calendar, Truck, Bell, LogOut } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Package, LogOut, ExternalLink } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { adminNav, isActivePath } from "@/lib/navigation";
 
-const links = [
-  { href: "/admin/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/admin/requests", label: "Demandes", icon: ClipboardList },
-  { href: "/admin/prices", label: "Tarifs", icon: DollarSign },
-  { href: "/admin/schedules", label: "Ramassages", icon: Calendar },
-  { href: "/admin/loading-dates", label: "Chargements", icon: Truck },
-  { href: "/admin/notifications", label: "Notifications", icon: Bell },
-];
-
-export default function AdminSidebar() {
+export default function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { logout } = useAuth();
 
+  const handleLogout = () => {
+    logout();
+    onNavigate?.();
+    router.push("/admin/login");
+  };
+
   return (
-    <aside className="w-64 min-h-screen bg-gray-900 text-white p-4 flex flex-col">
-      <div className="text-xl font-bold mb-8">STL Admin</div>
-      <nav className="space-y-2 flex-1">
-        {links.map((link) => {
+    <div className="flex h-full flex-col bg-brand-navy text-navy-100">
+      <div className="flex items-center gap-2 px-5 py-5 font-display text-lg font-bold text-white">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10">
+          <Package className="h-5 w-5 text-brand-gold" />
+        </span>
+        STL Admin
+      </div>
+
+      <nav className="flex-1 space-y-1 px-3 py-2" aria-label="Navigation admin">
+        {adminNav.map((link) => {
           const Icon = link.icon;
-          const isActive = pathname.startsWith(link.href);
+          const active = isActivePath(pathname, link.href);
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${isActive ? "bg-brand-blue text-white" : "hover:bg-gray-800 text-gray-300"}`}
+              onClick={onNavigate}
+              aria-current={active ? "page" : undefined}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                active ? "bg-brand-blue text-white" : "text-navy-200 hover:bg-white/10 hover:text-white"
+              }`}
             >
-              <Icon className="h-4 w-4" />
-              {link.label}
+              <Icon className="h-5 w-5 shrink-0" />
+              {link.labelKey}
             </Link>
           );
         })}
       </nav>
-      <button
-        onClick={logout}
-        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white mt-auto"
-      >
-        <LogOut className="h-4 w-4" /> Déconnexion
-      </button>
-    </aside>
+
+      <div className="space-y-1 border-t border-white/10 px-3 py-3">
+        <Link
+          href="/"
+          onClick={onNavigate}
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-navy-200 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <ExternalLink className="h-5 w-5" /> Voir le site public
+        </Link>
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-navy-200 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <LogOut className="h-5 w-5" /> Déconnexion
+        </button>
+      </div>
+    </div>
   );
 }

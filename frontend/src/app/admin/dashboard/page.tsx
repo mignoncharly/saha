@@ -1,54 +1,84 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { api } from "@/lib/api";
 import type { DashboardStats } from "@/types/api";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { ClipboardList, CheckCircle, BarChart3 } from "lucide-react";
+import LoadingState from "@/components/ui/LoadingState";
+import ErrorState from "@/components/ui/ErrorState";
 import AdminCharts from "@/components/admin/AdminCharts";
+import { ClipboardList, Sparkles, CheckCircle, Plus, CalendarPlus, Bell, ArrowRight } from "lucide-react";
+
+const quickLinks = [
+  { href: "/admin/requests", label: "Voir les demandes", icon: ClipboardList },
+  { href: "/admin/prices", label: "Ajouter un tarif", icon: Plus },
+  { href: "/admin/schedules", label: "Ajouter une tournée", icon: CalendarPlus },
+  { href: "/admin/notifications", label: "Envoyer une notification", icon: Bell },
+];
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    api.get<DashboardStats>("/admin/dashboard/").then(setStats).catch(console.error).finally(() => setLoading(false));
+    api
+      .get<DashboardStats>("/admin/dashboard/")
+      .then(setStats)
+      .catch(() => setFailed(true))
+      .finally(() => setLoading(false));
   }, []);
+
+  const cards = stats
+    ? [
+        { label: "Total demandes", value: stats.total_requests, icon: ClipboardList, accent: "bg-blue-100 text-blue-700" },
+        { label: "Nouvelles", value: stats.new_requests, icon: Sparkles, accent: "bg-amber-100 text-amber-700" },
+        { label: "Confirmées", value: stats.confirmed_requests, icon: CheckCircle, accent: "bg-green-100 text-green-700" },
+      ]
+    : [];
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl font-bold mb-6">Tableau de bord</h1>
       {loading ? (
-        <div className="flex justify-center py-10"><LoadingSpinner className="h-10 w-10" /></div>
-      ) : stats ? (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="card flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-full"><ClipboardList className="h-6 w-6 text-blue-700" /></div>
-              <div>
-                <p className="text-sm text-gray-500">Total demandes</p>
-                <p className="text-2xl font-bold">{stats.total_requests}</p>
+        <LoadingState label="Chargement des statistiques…" />
+      ) : failed || !stats ? (
+        <ErrorState message="Impossible de charger les statistiques." />
+      ) : (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {cards.map(({ label, value, icon: Icon, accent }) => (
+              <div key={label} className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
+                <span className={`flex h-12 w-12 items-center justify-center rounded-xl ${accent}`}>
+                  <Icon className="h-6 w-6" />
+                </span>
+                <div>
+                  <p className="text-sm text-gray-500">{label}</p>
+                  <p className="text-2xl font-bold text-gray-900">{value}</p>
+                </div>
               </div>
-            </div>
-            <div className="card flex items-center gap-4">
-              <div className="p-3 bg-yellow-100 rounded-full"><BarChart3 className="h-6 w-6 text-yellow-700" /></div>
-              <div>
-                <p className="text-sm text-gray-500">Nouvelles</p>
-                <p className="text-2xl font-bold">{stats.new_requests}</p>
-              </div>
-            </div>
-            <div className="card flex items-center gap-4">
-              <div className="p-3 bg-green-100 rounded-full"><CheckCircle className="h-6 w-6 text-green-700" /></div>
-              <div>
-                <p className="text-sm text-gray-500">Confirmées</p>
-                <p className="text-2xl font-bold">{stats.confirmed_requests}</p>
-              </div>
+            ))}
+          </div>
+
+          <div>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Actions rapides</h2>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {quickLinks.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex items-center justify-between gap-2 rounded-xl border border-gray-100 bg-white p-4 text-sm font-medium text-gray-800 shadow-card transition-shadow hover:shadow-soft"
+                >
+                  <span className="flex items-center gap-2">
+                    <Icon className="h-5 w-5 text-brand-blue" /> {label}
+                  </span>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-gray-300" />
+                </Link>
+              ))}
             </div>
           </div>
+
           <AdminCharts stats={stats} />
-        </>
-      ) : (
-        <p className="text-red-500">Impossible de charger les statistiques.</p>
+        </div>
       )}
     </AdminLayout>
   );

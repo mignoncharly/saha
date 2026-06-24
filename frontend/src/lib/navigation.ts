@@ -6,6 +6,10 @@ import {
   Truck,
   HelpCircle,
   Phone,
+  LayoutDashboard,
+  ClipboardList,
+  DollarSign,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 
@@ -37,6 +41,16 @@ export const mainNav: NavItem[] = [
   { href: "/demande", labelKey: "nav.pickup", icon: Truck },
   { href: "/faq", labelKey: "nav.faq", icon: HelpCircle },
   { href: "/contact", labelKey: "nav.contact", icon: Phone },
+];
+
+/** Admin area navigation (used by the admin shell sidebar/topbar). */
+export const adminNav: NavItem[] = [
+  { href: "/admin/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
+  { href: "/admin/requests", labelKey: "Demandes", icon: ClipboardList },
+  { href: "/admin/prices", labelKey: "Tarifs", icon: DollarSign },
+  { href: "/admin/schedules", labelKey: "Ramassages", icon: CalendarDays },
+  { href: "/admin/loading-dates", labelKey: "Chargements", icon: Truck },
+  { href: "/admin/notifications", labelKey: "Notifications", icon: Bell },
 ];
 
 /** True for a path that is the active route (exact for "/", prefix otherwise). */

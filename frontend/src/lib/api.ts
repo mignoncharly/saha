@@ -11,6 +11,30 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Turn an unknown thrown value into a human-readable message. Handles DRF's
+ * shapes: {"detail": "..."}, {"field": ["msg", ...]}, and plain strings.
+ */
+export function parseApiError(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) {
+    try {
+      const data = JSON.parse(err.message);
+      if (typeof data === "string") return data;
+      if (data.detail) return String(data.detail);
+      const messages: string[] = [];
+      for (const [key, value] of Object.entries(data)) {
+        if (key === "status_code") continue;
+        const text = Array.isArray(value) ? value.join(" ") : String(value);
+        messages.push(text);
+      }
+      if (messages.length) return messages.join(" ");
+    } catch {
+      if (err.message) return err.message;
+    }
+  }
+  return fallback;
+}
+
 async function request<T>(endpoint: string, options?: RequestInit, isFormData = false): Promise<T> {
   const headers: Record<string, string> = {
     ...((options?.headers as Record<string, string>) || {}),

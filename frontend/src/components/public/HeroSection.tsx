@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ShieldCheck, MapPin, Bell } from "lucide-react";
 import WhatsAppCTA from "@/components/public/WhatsAppCTA";
 
@@ -19,8 +20,8 @@ export default function HeroSection() {
         }}
         aria-hidden="true"
       />
-      <div className="container-page relative py-16 sm:py-24">
-        <div className="max-w-3xl">
+      <div className="container-page relative grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-2">
+        <div>
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-brand-gold ring-1 ring-white/15">
             🇪🇺 Europe → Cameroun 🇨🇲
           </span>
@@ -53,6 +54,19 @@ export default function HeroSection() {
               </li>
             ))}
           </ul>
+        </div>
+
+        {/* Hero image */}
+        <div className="relative">
+          <Image
+            src="/images/hero.jpg"
+            alt="Équipe SAHA Transport & Logistics chargeant des colis pour le Cameroun"
+            width={1079}
+            height={381}
+            priority
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="h-auto w-full rounded-2xl shadow-soft-lg ring-1 ring-white/15"
+          />
         </div>
       </div>
     </section>

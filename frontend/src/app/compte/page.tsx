@@ -1,5 +1,5 @@
 "use client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, userDisplayName } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
@@ -39,7 +39,7 @@ export default function AccountPage() {
           Se déconnecter
         </button>
       </div>
-      <p>Bienvenue, {user.email}</p>
+      <p>Bienvenue, {userDisplayName(user, user.email)}</p>
       <h2 className="text-xl font-semibold mt-8 mb-4">Mes demandes</h2>
       {loading ? (
         <p className="text-gray-500">Chargement...</p>

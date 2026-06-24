@@ -20,8 +20,9 @@ export default function AppNavbar() {
   if (pathname.startsWith("/admin")) return null;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="container-page flex h-16 items-center justify-between gap-4">
+    <>
+      <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+        <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 font-display text-xl font-bold text-brand-blue">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-blue text-white">
             <Package className="h-5 w-5 text-brand-gold" />
@@ -58,9 +59,10 @@ export default function AppNavbar() {
             <Menu className="h-6 w-6" />
           </button>
         </div>
-      </div>
+        </div>
+      </header>
 
       <MobileNavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
-    </header>
+    </>
   );
 }

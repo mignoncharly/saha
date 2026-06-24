@@ -6,7 +6,7 @@ import NotificationPermissionButton from "@/components/pwa/NotificationPermissio
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 import AccountMenu from "@/components/layout/AccountMenu";
 import { useTranslation } from "@/lib/i18n";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, userDisplayName } from "@/hooks/useAuth";
 
 const navLinks = [
   { href: "/", labelKey: "nav.home" },
@@ -74,7 +74,7 @@ export default function Header() {
                 onClick={() => setMobileOpen(false)}
               >
                 <User className="h-5 w-5" />
-                {user ? t("account.myAccount") : t("account.login")}
+                {user ? userDisplayName(user, t("account.myAccount")) : t("account.login")}
               </Link>
               <Link
                 href="/suivi"

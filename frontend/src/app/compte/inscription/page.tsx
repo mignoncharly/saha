@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { api } from "@/lib/api";
+import { api, parseApiError } from "@/lib/api";
 import { setToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
@@ -16,8 +16,8 @@ export default function RegisterPage() {
       const res = await api.post<{ token: string }>("/auth/register/", form);
       setToken(res.token);
       router.push("/compte");
-    } catch (err: any) {
-      setError("Erreur lors de l'inscription.");
+    } catch (err) {
+      setError(parseApiError(err, "Erreur lors de l'inscription."));
     }
   };
 

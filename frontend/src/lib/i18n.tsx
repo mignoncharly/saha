@@ -39,6 +39,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     "footer.via": "via WhatsApp",
     "footer.email": "Email",
     "footer.rights": "Tous droits réservés.",
+    "footer.adminLogin": "Espace administrateur",
     "lang.label": "Langue",
   },
   en: {
@@ -69,6 +70,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     "footer.via": "via WhatsApp",
     "footer.email": "Email",
     "footer.rights": "All rights reserved.",
+    "footer.adminLogin": "Admin area",
     "lang.label": "Language",
   },
 };

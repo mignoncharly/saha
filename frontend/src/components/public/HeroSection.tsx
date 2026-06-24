@@ -20,7 +20,7 @@ export default function HeroSection() {
             href={whatsappLink()}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-secondary text-lg px-8 py-4 inline-flex items-center gap-2 border-white text-white hover:bg-white/10"
+            className="btn-secondary text-lg px-8 py-4 inline-flex items-center gap-2 border-white bg-transparent text-white hover:bg-white/10"
           >
             <MessageCircle className="h-5 w-5" /> Contacter sur WhatsApp
           </a>

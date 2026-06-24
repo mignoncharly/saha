@@ -31,7 +31,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-gray-800 py-4 text-center text-xs">
-        &copy; {new Date().getFullYear()} SAHA Transport & Logistics. {t("footer.rights")} | <Link href="/privacy" className="underline">{t("footer.privacy")}</Link>
+        &copy; {new Date().getFullYear()} SAHA Transport & Logistics. {t("footer.rights")} | <Link href="/privacy" className="underline">{t("footer.privacy")}</Link> | <Link href="/admin/login" className="underline hover:text-white">{t("footer.adminLogin")}</Link>
       </div>
     </footer>
   );

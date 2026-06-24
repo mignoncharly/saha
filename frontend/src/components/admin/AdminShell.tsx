@@ -3,7 +3,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import { useAuth, userDisplayName } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { adminNav, isActivePath } from "@/lib/navigation";
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
@@ -58,9 +58,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           {user && (
             <div className="hidden items-center gap-2 text-sm text-gray-600 sm:flex">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-blue/10 text-xs font-bold uppercase text-brand-blue">
-                {userDisplayName(user, "A").charAt(0)}
+                A
               </span>
-              <span className="capitalize">{userDisplayName(user, "Admin")}</span>
+              <span className="badge bg-brand-gold/15 font-semibold text-brand-gold">Admin</span>
             </div>
           )}
         </header>

@@ -69,9 +69,13 @@ export default function UserDropdown() {
           <User className="h-3.5 w-3.5" />
           {unread > 0 && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-brand-red ring-2 ring-white" aria-label={`${unread} non lues`} />}
         </span>
-        <span className="max-w-[8rem] truncate">
-          {user ? userDisplayName(user, t("account.myAccount")) : t("account.login")}
-        </span>
+        {user && role === "admin" ? (
+          <span className="badge bg-brand-gold/15 font-semibold text-brand-gold">Admin</span>
+        ) : (
+          <span className="max-w-[8rem] truncate">
+            {user ? userDisplayName(user, t("account.myAccount")) : t("account.login")}
+          </span>
+        )}
         <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
@@ -118,10 +122,10 @@ export default function UserDropdown() {
           {user && role === "admin" && (
             <>
               <div className="px-3 pb-2 pt-1">
-                <p className="truncate text-sm font-semibold text-gray-900">
-                  {userDisplayName(user, "Admin")}
+                <p className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                  <span className="badge bg-brand-gold/15 text-brand-gold">Admin</span>
                 </p>
-                <p className="truncate text-xs text-gray-500">{user.email}</p>
+                <p className="mt-1 truncate text-xs text-gray-500">{user.email}</p>
               </div>
               <Link href="/admin/dashboard" onClick={close} className={itemClass} role="menuitem">
                 <LayoutDashboard className="h-4 w-4" /> {t("account.adminDashboard")}

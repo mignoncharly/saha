@@ -1,78 +1,43 @@
 "use client";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { faqItems as defaultItems, type FAQItem } from "@/lib/faq";
 
-interface FAQItem {
-  question: string;
-  answer: string;
+interface Props {
+  items?: FAQItem[];
 }
 
-const faqItems: FAQItem[] = [
-  {
-    question: "Comment demander un ramassage ?",
-    answer:
-      "Rendez-vous sur la page « Demander un ramassage », remplissez le formulaire avec vos informations et celles de vos biens. Vous recevrez un numéro de référence et serez contacté rapidement.",
-  },
-  {
-    question: "Quelles villes sont couvertes ?",
-    answer:
-      "Nous organisons des ramassages dans de nombreuses villes en Allemagne, en France et au Luxembourg : Francfort, Mainz, Darmstadt, Strasbourg, Metz, Luxembourg, Stuttgart, etc.",
-  },
-  {
-    question: "Quelles destinations au Cameroun ?",
-    answer:
-      "Nous livrons à Douala, Yaoundé et Bafoussam.",
-  },
-  {
-    question: "Comment connaître le prix exact ?",
-    answer:
-      "Les prix affichés sont indicatifs. Le prix final dépend du volume, du poids et de la destination. Notre équipe vous fera un devis personnalisé après votre demande.",
-  },
-  {
-    question: "Puis-je envoyer des photos de mes colis ?",
-    answer:
-      "Oui, le formulaire de demande vous permet d’ajouter des photos pour mieux décrire vos marchandises.",
-  },
-  {
-    question: "Est-ce que le paiement se fait en ligne ?",
-    answer:
-      "Le paiement en ligne n’est pas encore disponible. Après votre demande, l’équipe STL vous contacte pour confirmer les détails, le prix et les modalités.",
-  },
-  {
-    question: "Comment recevoir les notifications ?",
-    answer:
-      "Vous pouvez autoriser les notifications push lors de votre visite. Vous serez ainsi informé des prochaines dates de ramassage et de l’avancement de votre demande.",
-  },
-  {
-    question: "Comment suivre ma demande ?",
-    answer:
-      "Utilisez la page « Suivi de demande » et entrez votre numéro de référence (ex: STL-2026-000123) pour voir l’état de votre envoi.",
-  },
-];
-
-export default function FAQAccordion() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+export default function FAQAccordion({ items = defaultItems }: Props) {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
     <div className="space-y-3">
-      {faqItems.map((item, idx) => (
-        <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden">
-          <button
-            className="w-full flex justify-between items-center p-4 text-left font-medium bg-white hover:bg-gray-50 transition-colors"
-            onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
-          >
-            <span>{item.question}</span>
-            <ChevronDown
-              className={`h-5 w-5 transition-transform ${
-                openIndex === idx ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-          {openIndex === idx && (
-            <div className="px-4 pb-4 text-gray-600 text-sm">{item.answer}</div>
-          )}
-        </div>
-      ))}
+      {items.map((item, idx) => {
+        const open = openIndex === idx;
+        const panelId = `faq-panel-${idx}`;
+        const buttonId = `faq-button-${idx}`;
+        return (
+          <div key={idx} className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <button
+              id={buttonId}
+              aria-expanded={open}
+              aria-controls={panelId}
+              className="flex w-full items-center justify-between gap-4 p-4 text-left font-medium text-gray-900 transition-colors hover:bg-gray-50"
+              onClick={() => setOpenIndex(open ? null : idx)}
+            >
+              <span>{item.question}</span>
+              <ChevronDown
+                className={`h-5 w-5 shrink-0 text-brand-blue transition-transform ${open ? "rotate-180" : ""}`}
+              />
+            </button>
+            {open && (
+              <div id={panelId} role="region" aria-labelledby={buttonId} className="px-4 pb-4 text-sm text-gray-600">
+                {item.answer}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

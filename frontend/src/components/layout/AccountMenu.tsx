@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { User, ChevronDown, Truck, LogOut } from "lucide-react";
 import NotificationPermissionButton from "@/components/pwa/NotificationPermissionButton";
 import { useTranslation } from "@/lib/i18n";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, userDisplayName } from "@/hooks/useAuth";
 
 export default function AccountMenu() {
   const { t } = useTranslation();
@@ -31,7 +31,7 @@ export default function AccountMenu() {
         className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-brand-blue transition-colors"
       >
         <User className="h-4 w-4" />
-        {user ? t("account.myAccount") : t("account.login")}
+        <span className="max-w-[10rem] truncate">{user ? userDisplayName(user, t("account.myAccount")) : t("account.login")}</span>
         <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 

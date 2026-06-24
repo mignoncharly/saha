@@ -30,9 +30,15 @@ class AuthTokenSerializer(serializers.Serializer):
         return attrs
 
 class UserSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('id', 'email', 'role', 'is_active', 'email_verified', 'created_at')
+        fields = ('id', 'email', 'role', 'is_active', 'email_verified', 'created_at', 'full_name')
+
+    def get_full_name(self, obj):
+        profile = getattr(obj, 'customer_profile', None)
+        return profile.full_name if profile else ''
 
 class RegisterSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(max_length=255)

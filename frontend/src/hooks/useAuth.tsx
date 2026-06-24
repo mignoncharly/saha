@@ -7,6 +7,7 @@ interface User {
   id: number;
   email: string;
   role: string;
+  full_name?: string;
 }
 
 interface RegisterPayload {
@@ -65,6 +66,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
+}
+
+/**
+ * Short display name for a user: first word of the full name, else the local
+ * part of the email (before "@"), lowercased. Falls back when not logged in.
+ */
+export function userDisplayName(user: Pick<User, "email" | "full_name"> | null, fallback: string) {
+  if (!user) return fallback;
+  const firstName = (user.full_name || "").trim().split(/\s+/)[0];
+  if (firstName) return firstName.toLowerCase();
+  const local = (user.email || "").split("@")[0];
+  return local ? local.toLowerCase() : fallback;
 }
 
 export function useAuth() {

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import { parseApiError } from "@/lib/api";
 
 export default function CustomerLoginPage() {
@@ -17,9 +18,12 @@ export default function CustomerLoginPage() {
     setError("");
     try {
       await login(email, password);
+      toast.success("Connexion réussie.");
       router.push("/compte");
     } catch (err) {
-      setError(parseApiError(err, "Identifiants invalides."));
+      const message = parseApiError(err, "Identifiants invalides.");
+      setError(message);
+      toast.error(message);
     }
   };
 

@@ -63,7 +63,7 @@ export default async function Home() {
 
   return (
     <>
-      <HeroSection />
+      <HeroSection nextLoading={nextLoading} />
 
       {/* Trust badges */}
       <Section className="!py-10">

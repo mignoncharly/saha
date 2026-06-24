@@ -71,3 +71,49 @@
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 }
+
+/* Homepage hero shipment announcement (scrolling ticker) */
+.shipment-ticker {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  margin-bottom: 16px;
+  padding: 10px 0;
+  border-radius: 12px;
+  background: #d62828;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.shipment-ticker__track {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  will-change: transform;
+  animation: shipment-ticker-scroll 18s linear infinite;
+}
+
+.shipment-ticker__item {
+  display: inline-block;
+  padding: 0 2rem;
+}
+
+@keyframes shipment-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* Two identical items: shifting by half the track loops seamlessly. */
+    transform: translateX(-50%);
+  }
+}
+
+/* Respect users who prefer no motion: show a single static, readable line. */
+@media (prefers-reduced-motion: reduce) {
+  .shipment-ticker__track {
+    animation: none;
+  }
+  .shipment-ticker__item + .shipment-ticker__item {
+    display: none;
+  }
+}

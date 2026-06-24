@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions
+from django.utils import timezone
 from .models import PickupSchedule, LoadingDate
 from .serializers import PickupScheduleSerializer, LoadingDateSerializer
 from apps.core.permissions import IsStaffOrAdmin
@@ -9,9 +10,15 @@ class PickupScheduleListView(generics.ListAPIView):
     permission_classes = []
 
 class LoadingDateListView(generics.ListAPIView):
-    queryset = LoadingDate.objects.filter(active=True).order_by('date')
     serializer_class = LoadingDateSerializer
     permission_classes = []
+
+    def get_queryset(self):
+        # Public endpoint: only upcoming loadings from today onward, nearest first.
+        return LoadingDate.objects.filter(
+            active=True,
+            date__gte=timezone.localdate(),
+        ).order_by('date')
 
 # Admin views
 class AdminPickupScheduleListCreateView(generics.ListCreateAPIView):

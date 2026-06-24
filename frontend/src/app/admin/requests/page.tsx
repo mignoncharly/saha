@@ -17,7 +17,6 @@ export default function AdminRequestsPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Demandes de transport</h1>
         <AdminRequestFilters filters={filters} onFilterChange={setFilters} />
         <AdminRequestTable filters={filters} />
       </div>

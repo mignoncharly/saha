@@ -1,45 +1,20 @@
 "use client";
-import { useState, useEffect } from "react";
 import { Download } from "lucide-react";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
+import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 
 export default function InstallPWAButton() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const { canInstall, promptInstall } = useInstallPrompt();
 
-  useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-    window.addEventListener("appinstalled", () => setIsInstalled(true));
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
-      window.removeEventListener("appinstalled", () => {});
-    };
-  }, []);
-
-  const handleInstall = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const result = await deferredPrompt.userChoice;
-    if (result.outcome === "accepted") setDeferredPrompt(null);
-  };
-
-  if (isInstalled || !deferredPrompt) return null;
+  if (!canInstall) return null;
 
   return (
     <button
-      onClick={handleInstall}
-      className="fixed bottom-20 left-4 z-50 bg-brand-blue text-white rounded-full p-3 shadow-lg hover:bg-blue-800 transition-colors"
+      onClick={promptInstall}
+      className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-full bg-brand-blue px-4 py-3 text-sm font-semibold text-white shadow-soft-lg transition-colors hover:bg-navy-800 lg:bottom-6"
       aria-label="Installer l'application"
     >
-      <Download className="h-6 w-6" />
+      <Download className="h-5 w-5" />
+      <span className="hidden sm:inline">Installer l&apos;app</span>
     </button>
   );
 }

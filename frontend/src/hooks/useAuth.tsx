@@ -21,8 +21,8 @@ interface RegisterPayload {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  register: (payload: RegisterPayload) => Promise<User>;
   logout: () => void;
 }
 
@@ -49,12 +49,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await api.post<{ token: string; user: User }>("/auth/login/", { email, password });
     setToken(res.token);
     setUser(res.user);
+    return res.user;
   };
 
   const register = async (payload: RegisterPayload) => {
     const res = await api.post<{ token: string; user: User }>("/auth/register/", payload);
     setToken(res.token);
     setUser(res.user);
+    return res.user;
   };
 
   const logout = () => {

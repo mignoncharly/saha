@@ -1,11 +1,12 @@
 "use client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import type { DashboardStats } from '@/types/api';
+import { statusLabel } from '@/components/ui/StatusBadge';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff6361', '#bc5090'];
+const COLORS = ['#0D47A1', '#00C49F', '#F9A825', '#FF8042', '#8884d8', '#ff6361', '#bc5090'];
 
 export default function AdminCharts({ stats }: { stats: DashboardStats }) {
-  const statusData = stats.by_status.map(s => ({ name: s.status, count: s.count }));
+  const statusData = stats.by_status.map(s => ({ name: statusLabel(s.status), count: s.count }));
   const overTime = stats.requests_over_time || [];
   const cityData = stats.by_pickup_city.map(c => ({ name: c.pickup_city, value: c.count }));
 

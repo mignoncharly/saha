@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ShieldCheck, MapPin, Bell } from "lucide-react";
 import WhatsAppCTA from "@/components/public/WhatsAppCTA";
+import type { LoadingDate } from "@/types/api";
 
 const badges = [
   { icon: ShieldCheck, label: "Transport fiable & suivi" },
@@ -9,7 +10,17 @@ const badges = [
   { icon: Bell, label: "Notifications de chargement" },
 ];
 
-export default function HeroSection() {
+// Format an ISO date ("2026-07-11") as "11.07.2026" without timezone drift.
+function formatLoadingDate(iso: string): string {
+  const [year, month, day] = iso.split("-");
+  return `${day}.${month}.${year}`;
+}
+
+export default function HeroSection({ nextLoading }: { nextLoading?: LoadingDate | null }) {
+  const announcement = nextLoading
+    ? `⚠️ Attention, prochain chargement pour le Cameroun, prévu le ${formatLoadingDate(nextLoading.date)}`
+    : null;
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-brand-blue via-navy-800 to-navy-900 text-white">
       <div
@@ -22,6 +33,14 @@ export default function HeroSection() {
       />
       <div className="container-page relative grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-2">
         <div>
+          {announcement && (
+            <div className="shipment-ticker" role="status" aria-label={announcement}>
+              <div className="shipment-ticker__track" aria-hidden="true">
+                <span className="shipment-ticker__item">{announcement}</span>
+                <span className="shipment-ticker__item">{announcement}</span>
+              </div>
+            </div>
+          )}
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-brand-gold ring-1 ring-white/15">
             🇪🇺 Europe → Cameroun 🇨🇲
           </span>

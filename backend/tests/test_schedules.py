@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from apps.schedules.models import LoadingDate, PickupRegion, PickupSchedule
@@ -17,8 +18,17 @@ class ScheduleTests(APITestCase):
         PickupSchedule.objects.create(
             region=self.region, start_date=date(2026, 8, 1), active=False
         )
-        LoadingDate.objects.create(date=date(2026, 7, 15), title="Chargement Juillet", active=True)
-        LoadingDate.objects.create(date=date(2026, 9, 15), active=False)
+        today = timezone.localdate()
+        # Nearest upcoming active loading.
+        LoadingDate.objects.create(
+            date=today + timedelta(days=21), title="Chargement Juillet", active=True
+        )
+        # A later upcoming loading and an inactive one — neither should come first.
+        LoadingDate.objects.create(date=today + timedelta(days=60), active=False)
+        # A past loading must be excluded from the public endpoint.
+        LoadingDate.objects.create(
+            date=today - timedelta(days=5), title="Chargement passé", active=True
+        )
 
     def test_pickup_schedule_list_excludes_inactive(self):
         response = self.client.get(reverse("pickup-schedule-list"))

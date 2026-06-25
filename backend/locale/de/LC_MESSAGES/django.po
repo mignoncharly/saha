@@ -1,0 +1,519 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: SAHA STL\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-25 13:28+0200\n"
+"PO-Revision-Date: 2026-06-25 00:00+0000\n"
+"Last-Translator: SAHA STL\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps/accounts/models.py:8
+msgid "Email is required"
+msgstr "E-Mail-Adresse ist erforderlich"
+
+#: apps/accounts/models.py:24
+msgid "email address"
+msgstr "E-Mail-Adresse"
+
+#: apps/accounts/models.py:26
+msgid "Admin"
+msgstr "Administrator"
+
+#: apps/accounts/models.py:27
+msgid "Staff"
+msgstr "Mitarbeiter"
+
+#: apps/accounts/models.py:28 apps/logistics/views.py:149
+msgid "Customer"
+msgstr "Kunde"
+
+#: apps/accounts/serializers.py:24
+msgid "Unable to log in with provided credentials."
+msgstr "Anmeldung mit den angegebenen Zugangsdaten nicht möglich."
+
+#: apps/accounts/serializers.py:27
+msgid "Must include \"email\" and \"password\"."
+msgstr "E-Mail-Adresse und Passwort sind erforderlich."
+
+#: apps/accounts/serializers.py:56
+msgid "Un compte avec cet email existe déjà."
+msgstr "Ein Konto mit dieser E-Mail-Adresse besteht bereits."
+
+#: apps/accounts/views.py:59
+msgid "Missing token"
+msgstr "Token fehlt"
+
+#: apps/accounts/views.py:63
+msgid "Invalid token"
+msgstr "Ungültiger Token"
+
+#: apps/accounts/views.py:67
+msgid "Expired token"
+msgstr "Abgelaufener Token"
+
+#: apps/accounts/views.py:72
+msgid "Email address verified successfully."
+msgstr "E-Mail-Adresse erfolgreich bestätigt."
+
+#: apps/accounts/views.py:79
+msgid "Email address already verified."
+msgstr "E-Mail-Adresse wurde bereits bestätigt."
+
+#: apps/accounts/views.py:86
+msgid "Verification email sent again."
+msgstr "Bestätigungs-E-Mail wurde erneut gesendet."
+
+#: apps/accounts/views.py:93
+msgid "Email address is required."
+msgstr "E-Mail-Adresse ist erforderlich."
+
+#: apps/accounts/views.py:97 apps/accounts/views.py:105
+msgid "If this email address exists, a password reset link has been sent."
+msgstr "Falls diese E-Mail-Adresse existiert, wurde ein Link zum Zurücksetzen des Passworts gesendet."
+
+#: apps/accounts/views.py:114
+msgid "Missing parameters."
+msgstr "Parameter fehlen."
+
+#: apps/accounts/views.py:119
+msgid "Invalid link."
+msgstr "Ungültiger Link."
+
+#: apps/accounts/views.py:122
+msgid "Invalid or expired link."
+msgstr "Ungültiger oder abgelaufener Link."
+
+#: apps/accounts/views.py:125
+msgid "Password reset successfully."
+msgstr "Passwort erfolgreich zurückgesetzt."
+
+#: apps/audit/apps.py:6
+msgid "Audit"
+msgstr "Auditprotokoll"
+
+#: apps/contact/views.py:20
+#, python-format
+msgid "STL contact — %(name)s"
+msgstr "STL-Kontakt — %(name)s"
+
+#: apps/contact/views.py:21
+#, python-format
+msgid ""
+"Name: %(name)s\n"
+"Email: %(email)s\n"
+"Message:\n"
+"%(message)s"
+msgstr ""
+"Name: %(name)s\n"
+"E-Mail: %(email)s\n"
+"Nachricht:\n"
+"%(message)s"
+
+#: apps/contact/views.py:25
+msgid "Message sent successfully."
+msgstr "Nachricht erfolgreich gesendet."
+
+#: apps/core/i18n.py:7
+msgid "Colis"
+msgstr "Paket"
+
+#: apps/core/i18n.py:8
+msgid "Fût 200L"
+msgstr "200-Liter-Fass"
+
+#: apps/core/i18n.py:9
+msgid "Volume m³"
+msgstr "Volumen m³"
+
+#: apps/core/i18n.py:10
+msgid "Voiture chargée"
+msgstr "Beladenes Fahrzeug"
+
+#: apps/core/i18n.py:11
+msgid "Autre"
+msgstr "Sonstiges"
+
+#: apps/core/i18n.py:12
+msgid "Envoi de colis standard"
+msgstr "Versand von Standardpaketen"
+
+#: apps/core/i18n.py:13
+msgid "Transport de fûts de 200 litres"
+msgstr "Transport von 200-Liter-Fässern"
+
+#: apps/core/i18n.py:14
+msgid "Transport au volume (mètre cube)"
+msgstr "Transport nach Volumen (Kubikmeter)"
+
+#: apps/core/i18n.py:15
+msgid "Transport de véhicule avec marchandises"
+msgstr "Transport eines Fahrzeugs mit Waren"
+
+#: apps/core/i18n.py:16
+msgid "Autres marchandises sur devis"
+msgstr "Andere Waren auf Anfrage"
+
+#: apps/core/i18n.py:17
+msgid "Petite voiture"
+msgstr "Kleinwagen"
+
+#: apps/core/i18n.py:18
+msgid "Berline"
+msgstr "Limousine"
+
+#: apps/core/i18n.py:19
+msgid "SUV/4x4"
+msgstr "SUV/Allrad"
+
+#: apps/core/i18n.py:20
+msgid "Grand SUV"
+msgstr "Großer SUV"
+
+#: apps/core/i18n.py:21
+msgid "Colis standard"
+msgstr "Standardpaket"
+
+#: apps/core/i18n.py:22
+msgid "pièce"
+msgstr "Stück"
+
+#: apps/core/i18n.py:23
+msgid "voiture"
+msgstr "Fahrzeug"
+
+#: apps/core/i18n.py:24
+msgid "Cameroun"
+msgstr "Kamerun"
+
+#: apps/core/i18n.py:25
+msgid "Allemagne"
+msgstr "Deutschland"
+
+#: apps/core/i18n.py:26
+msgid "Prochain chargement"
+msgstr "Nächste Verladung"
+
+#: apps/core/i18n.py:27
+msgid "Date prévue de chargement pour le Cameroun"
+msgstr "Voraussichtlicher Verladungstermin für Kamerun"
+
+#: apps/logistics/models.py:9
+msgid "New"
+msgstr "Neu"
+
+#: apps/logistics/models.py:10
+msgid "Contacted"
+msgstr "Kontaktiert"
+
+#: apps/logistics/models.py:11
+msgid "Confirmed"
+msgstr "Bestätigt"
+
+#: apps/logistics/models.py:12
+msgid "Pickup scheduled"
+msgstr "Abholung geplant"
+
+#: apps/logistics/models.py:13
+msgid "Received"
+msgstr "Eingegangen"
+
+#: apps/logistics/models.py:14
+msgid "Loaded"
+msgstr "Verladen"
+
+#: apps/logistics/models.py:15
+msgid "In transit"
+msgstr "Unterwegs"
+
+#: apps/logistics/models.py:16
+msgid "Arrived in Cameroon"
+msgstr "In Kamerun angekommen"
+
+#: apps/logistics/models.py:17
+msgid "Delivered"
+msgstr "Zugestellt"
+
+#: apps/logistics/models.py:18
+msgid "Cancelled"
+msgstr "Storniert"
+
+#: apps/logistics/models.py:51
+#, python-format
+msgid "Photo %(photo_id)s for %(reference)s"
+msgstr "Foto %(photo_id)s für %(reference)s"
+
+#: apps/logistics/serializers.py:55
+msgid "Quantity must be at least 1."
+msgstr "Die Menge muss mindestens 1 betragen."
+
+#: apps/logistics/views.py:36
+msgid "You must agree to be contacted."
+msgstr "Sie müssen der Kontaktaufnahme zustimmen."
+
+#: apps/logistics/views.py:46 apps/logistics/views.py:48
+msgid "This field is required."
+msgstr "Dieses Feld ist erforderlich."
+
+#: apps/logistics/views.py:126
+#, python-format
+msgid "Transition from %(current)s to %(new)s is not allowed."
+msgstr "Der Übergang von %(current)s zu %(new)s ist nicht zulässig."
+
+#: apps/logistics/views.py:149
+msgid "Reference"
+msgstr "Referenz"
+
+#: apps/logistics/views.py:149
+msgid "Phone"
+msgstr "Telefon"
+
+#: apps/logistics/views.py:149
+msgid "Pickup city"
+msgstr "Abholort"
+
+#: apps/logistics/views.py:150
+msgid "Destination"
+msgstr "Zielort"
+
+#: apps/logistics/views.py:150
+msgid "Status"
+msgstr "Status"
+
+#: apps/logistics/views.py:150
+msgid "Created at"
+msgstr "Erstellt am"
+
+#: apps/notifications/emails.py:33
+msgid "Europe → Cameroon"
+msgstr "Europa → Kamerun"
+
+#: apps/notifications/emails.py:34
+msgid "If the button does not work, copy this link into your browser:"
+msgstr "Falls die Schaltfläche nicht funktioniert, kopieren Sie diesen Link in Ihren Browser:"
+
+#: apps/notifications/emails.py:35
+msgid "Parcel and freight transport from Europe to Cameroon (Douala, Yaoundé, Bafoussam)."
+msgstr "Paket- und Frachttransport von Europa nach Kamerun (Douala, Yaoundé, Bafoussam)."
+
+#: apps/notifications/emails.py:36
+msgid "All rights reserved."
+msgstr "Alle Rechte vorbehalten."
+
+#: apps/notifications/emails.py:111
+msgid "Verify your email address — SAHA Transport & Logistics"
+msgstr "Bestätigen Sie Ihre E-Mail-Adresse — SAHA Transport & Logistics"
+
+#: apps/notifications/emails.py:113 apps/notifications/emails.py:122
+#: apps/notifications/emails.py:145 apps/notifications/emails.py:153
+msgid "Hello,"
+msgstr "Guten Tag,"
+
+#: apps/notifications/emails.py:114
+msgid "Welcome to SAHA Transport & Logistics!"
+msgstr "Willkommen bei SAHA Transport & Logistics!"
+
+#: apps/notifications/emails.py:115
+msgid "Please confirm your email address by opening this link:"
+msgstr "Bitte bestätigen Sie Ihre E-Mail-Adresse über diesen Link:"
+
+#: apps/notifications/emails.py:117
+msgid "This link is valid for 24 hours."
+msgstr "Dieser Link ist 24 Stunden gültig."
+
+#: apps/notifications/emails.py:118
+msgid "If you did not create an account, you can ignore this message."
+msgstr "Falls Sie kein Konto erstellt haben, können Sie diese Nachricht ignorieren."
+
+#: apps/notifications/emails.py:119 apps/notifications/emails.py:150
+msgid "The SAHA Transport & Logistics team"
+msgstr "Ihr Team von SAHA Transport & Logistics"
+
+#: apps/notifications/emails.py:123
+msgid "Welcome to <strong>SAHA Transport &amp; Logistics</strong>! "
+msgstr "Willkommen bei <strong>SAHA Transport &amp; Logistics</strong>! "
+
+#: apps/notifications/emails.py:124
+msgid "One final step: confirm your email address to secure your account and track your shipments."
+msgstr "Nur noch ein Schritt: Bestätigen Sie Ihre E-Mail-Adresse, um Ihr Konto zu schützen und Ihre Sendungen zu verfolgen."
+
+#: apps/notifications/emails.py:128
+msgid "This link is valid for 24 hours. If you did not create an account, you can ignore this message."
+msgstr "Dieser Link ist 24 Stunden gültig. Falls Sie kein Konto erstellt haben, können Sie diese Nachricht ignorieren."
+
+#: apps/notifications/emails.py:132
+msgid "Confirm your email address to activate your SAHA account."
+msgstr "Bestätigen Sie Ihre E-Mail-Adresse, um Ihr SAHA-Konto zu aktivieren."
+
+#: apps/notifications/emails.py:133
+msgid "Confirm your email address"
+msgstr "E-Mail-Adresse bestätigen"
+
+#: apps/notifications/emails.py:135
+msgid "Verify my email address"
+msgstr "Meine E-Mail-Adresse bestätigen"
+
+#: apps/notifications/emails.py:143
+msgid "Reset your password — SAHA Transport & Logistics"
+msgstr "Passwort zurücksetzen — SAHA Transport & Logistics"
+
+#: apps/notifications/emails.py:146
+msgid "You requested a password reset."
+msgstr "Sie haben das Zurücksetzen Ihres Passworts angefordert."
+
+#: apps/notifications/emails.py:147
+msgid "Open this link to choose a new password:"
+msgstr "Öffnen Sie diesen Link, um ein neues Passwort festzulegen:"
+
+#: apps/notifications/emails.py:149 apps/notifications/emails.py:158
+msgid "If you did not request this, ignore this message; your password will remain unchanged."
+msgstr "Falls Sie dies nicht angefordert haben, ignorieren Sie diese Nachricht. Ihr Passwort bleibt unverändert."
+
+#: apps/notifications/emails.py:154
+msgid "You requested a password reset. Click the button below to choose a new password."
+msgstr "Sie haben das Zurücksetzen Ihres Passworts angefordert. Klicken Sie auf die Schaltfläche, um ein neues Passwort festzulegen."
+
+#: apps/notifications/emails.py:162
+msgid "Reset the password for your SAHA account."
+msgstr "Setzen Sie das Passwort Ihres SAHA-Kontos zurück."
+
+#: apps/notifications/emails.py:163
+msgid "Reset your password"
+msgstr "Passwort zurücksetzen"
+
+#: apps/notifications/emails.py:165
+msgid "Choose a new password"
+msgstr "Neues Passwort festlegen"
+
+#: apps/notifications/models.py:10
+msgid "Region/city interest"
+msgstr "Beobachtete Region oder Stadt"
+
+#: apps/notifications/models.py:23 apps/notifications/serializers.py:13
+msgid "All"
+msgstr "Alle"
+
+#: apps/notifications/models.py:24 apps/notifications/serializers.py:13
+msgid "Region"
+msgstr "Region"
+
+#: apps/notifications/models.py:25
+msgid "Request status"
+msgstr "Anfragestatus"
+
+#: apps/notifications/models.py:33
+#, python-format
+msgid "%(title)s (%(count)s sent)"
+msgstr "%(title)s (%(count)s gesendet)"
+
+#: apps/notifications/models.py:41
+msgid "Linked request reference, if any"
+msgstr "Verknüpfte Anfragereferenz, falls vorhanden"
+
+#: apps/notifications/models.py:56
+msgid "Comma-separated preferred pickup regions"
+msgstr "Bevorzugte Abholregionen, durch Kommas getrennt"
+
+#: apps/notifications/models.py:57
+msgid "Receive request status updates"
+msgstr "Statusaktualisierungen zu Anfragen erhalten"
+
+#: apps/notifications/models.py:58
+msgid "Receive pickup/loading alerts"
+msgstr "Benachrichtigungen zu Abholungen und Verladungen erhalten"
+
+#: apps/notifications/models.py:62
+#, python-format
+msgid "Preferences %(customer_id)s"
+msgstr "Einstellungen %(customer_id)s"
+
+#: apps/notifications/tasks.py:87
+#, python-format
+msgid "Request %(reference)s"
+msgstr "Anfrage %(reference)s"
+
+#: apps/notifications/tasks.py:88
+#, python-format
+msgid "Status updated: %(status)s"
+msgstr "Status aktualisiert: %(status)s"
+
+#: apps/notifications/tasks.py:89
+#, python-format
+msgid "Status update %(reference)s"
+msgstr "Statusaktualisierung %(reference)s"
+
+#: apps/notifications/views.py:57
+msgid "Notification is being sent in the background."
+msgstr "Die Benachrichtigung wird im Hintergrund gesendet."
+
+#: apps/notifications/views.py:111 apps/notifications/views.py:118
+msgid "No customer profile found."
+msgstr "Kein Kundenprofil gefunden."
+
+#: apps/pricing/models.py:10
+msgid "Example: 'piece', 'm³', 'vehicle'"
+msgstr "Beispiel: 'Stück', 'm³', 'Fahrzeug'"
+
+#: apps/pricing/views.py:37
+msgid "Service type is required."
+msgstr "Die Leistungsart ist erforderlich."
+
+#: apps/pricing/views.py:46
+msgid "No price found."
+msgstr "Kein Preis gefunden."
+
+#: apps/pricing/views.py:56
+msgid "Invalid request."
+msgstr "Ungültige Anfrage."
+
+#: apps/schedules/admin_views.py:32
+msgid "No file provided."
+msgstr "Keine Datei bereitgestellt."
+
+#: apps/schedules/admin_views.py:67
+msgid "Invalid CSV file."
+msgstr "Ungültige CSV-Datei."
+
+#: apps/schedules/models.py:7
+msgid "Comma-separated list of cities"
+msgstr "Liste der Städte, durch Kommas getrennt"
+
+#: apps/schedules/models.py:16
+msgid "Override cities for this schedule"
+msgstr "Städte für diese Abholtour überschreiben"
+
+#: apps/schedules/models.py:42
+#, python-format
+msgid "Loading %(date)s"
+msgstr "Verladung am %(date)s"
+
+#: apps/services/models.py:7
+msgid "Icon identifier for frontend"
+msgstr "Symbolkennung für die Benutzeroberfläche"
+
+#: apps/uploads/validators.py:10
+#, python-format
+msgid "Unsupported file extension. Allowed: %(extensions)s"
+msgstr "Nicht unterstützte Dateiendung. Zulässig: %(extensions)s"
+
+#: apps/uploads/validators.py:17
+#, python-format
+msgid "File size exceeds the limit of %(limit).1f MB."
+msgstr "Die Datei überschreitet die Größenbegrenzung von %(limit).1f MB."
+
+#: config/settings/base.py:117
+msgid "French"
+msgstr "Französisch"
+
+#: config/settings/base.py:118
+msgid "German"
+msgstr "Deutsch"

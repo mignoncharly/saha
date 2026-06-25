@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError('Email is required')
+            raise ValueError(_('Email is required'))
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -23,9 +23,9 @@ class User(AbstractUser):
     username = None
     email = models.EmailField(_('email address'), unique=True)
     role = models.CharField(max_length=20, choices=[
-        ('admin', 'Admin'),
-        ('staff', 'Staff'),
-        ('customer', 'Customer'),
+        ('admin', _('Admin')),
+        ('staff', _('Staff')),
+        ('customer', _('Customer')),
     ], default='customer')
     is_customer = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)

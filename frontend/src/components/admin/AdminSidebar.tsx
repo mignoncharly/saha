@@ -4,11 +4,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { Package, LogOut, ExternalLink } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { adminNav, isActivePath } from "@/lib/navigation";
+import { useTranslation } from "@/lib/i18n";
 
 export default function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -25,7 +27,7 @@ export default function AdminSidebar({ onNavigate }: { onNavigate?: () => void }
         STL Admin
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-2" aria-label="Navigation admin">
+      <nav className="flex-1 space-y-1 px-3 py-2" aria-label={t("Navigation admin")}>
         {adminNav.map((link) => {
           const Icon = link.icon;
           const active = isActivePath(pathname, link.href);
@@ -40,7 +42,7 @@ export default function AdminSidebar({ onNavigate }: { onNavigate?: () => void }
               }`}
             >
               <Icon className="h-5 w-5 shrink-0" />
-              {link.labelKey}
+              {t(link.labelKey)}
             </Link>
           );
         })}
@@ -52,13 +54,13 @@ export default function AdminSidebar({ onNavigate }: { onNavigate?: () => void }
           onClick={onNavigate}
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-navy-200 transition-colors hover:bg-white/10 hover:text-white"
         >
-          <ExternalLink className="h-5 w-5" /> Voir le site public
+          <ExternalLink className="h-5 w-5" /> {t("Voir le site public")}
         </Link>
         <button
           onClick={handleLogout}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-navy-200 transition-colors hover:bg-white/10 hover:text-white"
         >
-          <LogOut className="h-5 w-5" /> Déconnexion
+          <LogOut className="h-5 w-5" /> {t("Déconnexion")}
         </button>
       </div>
     </div>

@@ -1,4 +1,6 @@
+"use client";
 import { Check, Clock, Circle } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 const statusSteps = [
   { key: "new", label: "Nouveau", icon: Clock },
@@ -18,6 +20,7 @@ interface Props {
 }
 
 export default function StatusTimeline({ currentStatus }: Props) {
+  const { t } = useTranslation();
   const currentIndex = statusSteps.findIndex((s) => s.key === currentStatus);
   const isCancelled = currentStatus === "cancelled";
 
@@ -38,9 +41,9 @@ export default function StatusTimeline({ currentStatus }: Props) {
             </div>
             <div className="pt-1">
               <span className={`text-sm font-medium ${isActive ? "text-brand-blue" : "text-gray-500"}`}>
-                {step.label}
+                {t(step.label)}
               </span>
-              {isCurrent && <p className="text-xs text-brand-gold mt-0.5">État actuel</p>}
+              {isCurrent && <p className="text-xs text-brand-gold mt-0.5">{t("État actuel")}</p>}
             </div>
           </div>
         );

@@ -1,4 +1,6 @@
+"use client";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useTranslation } from "@/lib/i18n";
 
 interface LoadingStateProps {
   label?: string;
@@ -7,7 +9,8 @@ interface LoadingStateProps {
   fullPage?: boolean;
 }
 
-export default function LoadingState({ label = "Chargement…", className = "", fullPage = false }: LoadingStateProps) {
+export default function LoadingState({ label, className = "", fullPage = false }: LoadingStateProps) {
+  const { t } = useTranslation();
   return (
     <div
       role="status"
@@ -17,7 +20,7 @@ export default function LoadingState({ label = "Chargement…", className = "", 
       } ${className}`}
     >
       <LoadingSpinner className="h-8 w-8 text-brand-blue" />
-      <span className="text-sm">{label}</span>
+      <span className="text-sm">{label || t("Chargement…")}</span>
     </div>
   );
 }

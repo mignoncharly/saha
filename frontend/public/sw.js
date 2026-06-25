@@ -3,7 +3,6 @@ const OFFLINE_URL = '/offline.html';
 const ASSETS = [
   '/',
   '/offline.html',
-  '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/badge-96.png',

@@ -1,10 +1,12 @@
+import type { Translate } from "@/lib/i18n-config";
+
 export interface FAQItem {
   question: string;
   answer: string;
 }
 
 /** Shared FAQ content, used by the FAQ page and the home-page preview. */
-export const faqItems: FAQItem[] = [
+const faqSource: FAQItem[] = [
   {
     question: "Comment demander un ramassage ?",
     answer:
@@ -45,3 +47,7 @@ export const faqItems: FAQItem[] = [
       "Utilisez la page « Suivi de demande » et entrez votre numéro de référence (ex: STL-2026-000123) pour voir l’état de votre envoi.",
   },
 ];
+
+export function getFaqItems(t: Translate): FAQItem[] {
+  return faqSource.map((item) => ({ question: t(item.question), answer: t(item.answer) }));
+}

@@ -45,12 +45,12 @@ export const mainNav: NavItem[] = [
 
 /** Admin area navigation (used by the admin shell sidebar/topbar). */
 export const adminNav: NavItem[] = [
-  { href: "/admin/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/admin/requests", labelKey: "Demandes", icon: ClipboardList },
-  { href: "/admin/prices", labelKey: "Tarifs", icon: DollarSign },
-  { href: "/admin/schedules", labelKey: "Ramassages", icon: CalendarDays },
-  { href: "/admin/loading-dates", labelKey: "Chargements", icon: Truck },
-  { href: "/admin/notifications", labelKey: "Notifications", icon: Bell },
+  { href: "/admin/dashboard", labelKey: "admin.dashboard", icon: LayoutDashboard },
+  { href: "/admin/requests", labelKey: "admin.requests", icon: ClipboardList },
+  { href: "/admin/prices", labelKey: "admin.prices", icon: DollarSign },
+  { href: "/admin/schedules", labelKey: "admin.pickups", icon: CalendarDays },
+  { href: "/admin/loading-dates", labelKey: "admin.loadings", icon: Truck },
+  { href: "/admin/notifications", labelKey: "admin.notifications", icon: Bell },
 ];
 
 /** True for a path that is the active route (exact for "/", prefix otherwise). */

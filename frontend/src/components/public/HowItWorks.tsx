@@ -1,4 +1,6 @@
+"use client";
 import { ClipboardList, PhoneCall, PackageCheck, Ship, BellRing } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 const steps = [
   { icon: ClipboardList, title: "Vous faites une demande", text: "Décrivez vos biens et votre adresse de ramassage en quelques minutes." },
@@ -9,6 +11,7 @@ const steps = [
 ];
 
 export default function HowItWorks() {
+  const { t } = useTranslation();
   return (
     <ol className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
       {steps.map(({ icon: Icon, title, text }, i) => (
@@ -19,8 +22,8 @@ export default function HowItWorks() {
             </span>
             <span className="font-display text-3xl font-bold text-gray-100">{i + 1}</span>
           </div>
-          <h3 className="font-semibold text-gray-900">{title}</h3>
-          <p className="mt-1.5 text-sm text-gray-600">{text}</p>
+          <h3 className="font-semibold text-gray-900">{t(title)}</h3>
+          <p className="mt-1.5 text-sm text-gray-600">{t(text)}</p>
         </li>
       ))}
     </ol>

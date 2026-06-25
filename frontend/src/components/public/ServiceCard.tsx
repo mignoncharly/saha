@@ -1,5 +1,7 @@
+"use client";
 import Link from "next/link";
 import { ArrowRight, type LucideIcon } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 interface Props {
   name: string;
@@ -11,6 +13,7 @@ interface Props {
 }
 
 export default function ServiceCard({ name, description, icon: Icon, href, ctaLabel }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="group flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-card transition-all hover:-translate-y-0.5 hover:border-brand-gold/40 hover:shadow-soft">
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-gold/10 text-brand-gold transition-colors group-hover:bg-brand-gold group-hover:text-white">
@@ -23,7 +26,7 @@ export default function ServiceCard({ name, description, icon: Icon, href, ctaLa
           href={href}
           className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-blue hover:gap-2.5"
         >
-          {ctaLabel || "Demander ce transport"} <ArrowRight className="h-4 w-4 transition-all" />
+          {ctaLabel || t("Demander ce transport")} <ArrowRight className="h-4 w-4 transition-all" />
         </Link>
       )}
     </div>

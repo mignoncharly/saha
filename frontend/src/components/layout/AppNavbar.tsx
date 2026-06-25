@@ -31,7 +31,7 @@ export default function AppNavbar() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-5 lg:flex" aria-label="Navigation principale">
+        <nav className="hidden items-center gap-5 lg:flex" aria-label={t("Navigation principale")}>
           {mainNav.map((item) => (
             <NavLink key={item.href} href={item.href}>
               {t(item.labelKey)}
@@ -52,7 +52,7 @@ export default function AppNavbar() {
           <WhatsAppCTA className="!px-3 !py-2" iconOnly />
           <button
             onClick={() => setDrawerOpen(true)}
-            aria-label="Ouvrir le menu"
+            aria-label={t("Ouvrir le menu")}
             aria-expanded={drawerOpen}
             className="rounded-md p-2 text-gray-700 hover:bg-gray-100"
           >

@@ -5,10 +5,12 @@ import { Menu } from "lucide-react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { adminNav, isActivePath } from "@/lib/navigation";
+import { useTranslation } from "@/lib/i18n";
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   // Lock body scroll while the mobile drawer is open.
@@ -25,7 +27,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   }, [open]);
 
   const current = adminNav.find((l) => isActivePath(pathname, l.href));
-  const title = current?.labelKey ?? "Administration";
+  const title = current ? t(current.labelKey) : t("Administration");
 
   return (
     <div className="min-h-screen bg-gray-50 lg:flex">
@@ -36,7 +38,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
       {/* Mobile drawer */}
       {open && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu admin">
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t("Menu admin")}>
           <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={() => setOpen(false)} />
           <div className="absolute left-0 top-0 h-full w-72 max-w-[85%] animate-slide-in-right">
             <AdminSidebar onNavigate={() => setOpen(false)} />
@@ -49,7 +51,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-gray-200 bg-white px-4 sm:px-6">
           <button
             onClick={() => setOpen(true)}
-            aria-label="Ouvrir le menu"
+            aria-label={t("Ouvrir le menu")}
             className="rounded-md p-2 text-gray-700 hover:bg-gray-100 lg:hidden"
           >
             <Menu className="h-6 w-6" />

@@ -12,6 +12,7 @@ from .serializers import (
 )
 from .tasks import send_broadcast_notification
 from apps.core.permissions import IsStaffOrAdmin
+from django.utils.translation import gettext as _
 
 
 def _customer_of(request):
@@ -53,7 +54,7 @@ class AdminBroadcastView(generics.GenericAPIView):
             target_region=data.get('target_region', ''),
         )
         send_broadcast_notification.delay(log.id)
-        return Response({'detail': 'Notification envoyée en arrière-plan.', 'log_id': log.id}, status=status.HTTP_201_CREATED)
+        return Response({'detail': _('Notification is being sent in the background.'), 'log_id': log.id}, status=status.HTTP_201_CREATED)
 
 
 # ---- Customer notification center ----
@@ -107,15 +108,15 @@ class NotificationPreferenceView(APIView):
     def get(self, request):
         customer = _customer_of(request)
         if not customer:
-            return Response({'detail': "Aucun profil client."}, status=status.HTTP_404_NOT_FOUND)
-        pref, _ = NotificationPreference.objects.get_or_create(customer=customer)
+            return Response({'detail': _('No customer profile found.')}, status=status.HTTP_404_NOT_FOUND)
+        pref, created = NotificationPreference.objects.get_or_create(customer=customer)
         return Response(NotificationPreferenceSerializer(pref).data)
 
     def put(self, request):
         customer = _customer_of(request)
         if not customer:
-            return Response({'detail': "Aucun profil client."}, status=status.HTTP_404_NOT_FOUND)
-        pref, _ = NotificationPreference.objects.get_or_create(customer=customer)
+            return Response({'detail': _('No customer profile found.')}, status=status.HTTP_404_NOT_FOUND)
+        pref, created = NotificationPreference.objects.get_or_create(customer=customer)
         serializer = NotificationPreferenceSerializer(pref, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()

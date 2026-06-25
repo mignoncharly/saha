@@ -2,18 +2,21 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { User, Boxes, MapPin, ImagePlus, NotebookPen } from "lucide-react";
-import { transportRequestSchema, type TransportRequestFormData } from "@/lib/validators";
-import { api } from "@/lib/api";
+import { createTransportRequestSchema, type TransportRequestFormData } from "@/lib/validators";
+import { api, parseApiError } from "@/lib/api";
 import type { ServiceType, DestinationCity } from "@/types/api";
 import PageHeader from "@/components/ui/PageHeader";
 import FormField from "@/components/ui/FormField";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import WhatsAppCTA from "@/components/public/WhatsAppCTA";
+import { useTranslation } from "@/lib/i18n";
 
 export default function DemandePage() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const schema = useMemo(() => createTransportRequestSchema(t), [t]);
   const [services, setServices] = useState<ServiceType[]>([]);
   const [destinations, setDestinations] = useState<DestinationCity[]>([]);
   const [loading, setLoading] = useState(false);
@@ -29,7 +32,7 @@ export default function DemandePage() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<TransportRequestFormData>({
-    resolver: zodResolver(transportRequestSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       quantity: 1,
       consent: false as any,
@@ -68,8 +71,8 @@ export default function DemandePage() {
           destinations.find((d) => d.id === data.destination_city_id)?.name || ""
         )}`
       );
-    } catch (err: any) {
-      setError(err.message || "Erreur lors de la soumission.");
+    } catch (err) {
+      setError(parseApiError(err, t("Erreur lors de la soumission.")));
       window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setLoading(false);
@@ -83,8 +86,8 @@ export default function DemandePage() {
       <PageHeader
         hero
         icon={<Boxes className="h-8 w-8" />}
-        title="Demander un ramassage"
-        subtitle="Remplissez le formulaire et notre équipe vous contacte rapidement pour confirmer les détails et le prix."
+        title={t("cta.request")}
+        subtitle={t("Remplissez le formulaire et notre équipe vous contacte rapidement pour confirmer les détails et le prix.")}
       />
 
       <div className="container-page max-w-3xl py-12">
@@ -98,19 +101,19 @@ export default function DemandePage() {
           {/* Customer info */}
           <fieldset className="card">
             <legend className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900">
-              <User className="h-5 w-5 text-brand-blue" /> Vos informations
+              <User className="h-5 w-5 text-brand-blue" /> {t("Vos informations")}
             </legend>
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label="Nom complet" htmlFor="full_name" required error={errors.full_name?.message}>
+              <FormField label={t("Nom complet")} htmlFor="full_name" required error={errors.full_name?.message}>
                 <input id="full_name" {...register("full_name")} className={`input ${errors.full_name ? "input-error" : ""}`} />
               </FormField>
-              <FormField label="Téléphone / WhatsApp" htmlFor="phone" required error={errors.phone?.message}>
+              <FormField label={t("Téléphone / WhatsApp")} htmlFor="phone" required error={errors.phone?.message}>
                 <input id="phone" {...register("phone")} className={`input ${errors.phone ? "input-error" : ""}`} />
               </FormField>
-              <FormField label="Email" htmlFor="email" error={errors.email?.message}>
+              <FormField label={t("Email")} htmlFor="email" error={errors.email?.message}>
                 <input id="email" type="email" {...register("email")} className={`input ${errors.email ? "input-error" : ""}`} />
               </FormField>
-              <FormField label="WhatsApp (si différent)" htmlFor="whatsapp_number">
+              <FormField label={t("WhatsApp (si différent)")} htmlFor="whatsapp_number">
                 <input id="whatsapp_number" {...register("whatsapp_number")} className="input" />
               </FormField>
             </div>
@@ -119,12 +122,12 @@ export default function DemandePage() {
           {/* Goods info */}
           <fieldset className="card">
             <legend className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900">
-              <Boxes className="h-5 w-5 text-brand-blue" /> Type de marchandise
+              <Boxes className="h-5 w-5 text-brand-blue" /> {t("Type de marchandise")}
             </legend>
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label="Type de service" htmlFor="service_type_id" required error={errors.service_type_id?.message}>
+              <FormField label={t("Type de service")} htmlFor="service_type_id" required error={errors.service_type_id?.message}>
                 <select id="service_type_id" {...register("service_type_id")} className={`input ${errors.service_type_id ? "input-error" : ""}`}>
-                  <option value="">Sélectionnez…</option>
+                  <option value="">{t("Sélectionnez…")}</option>
                   {services.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
@@ -132,17 +135,17 @@ export default function DemandePage() {
                   ))}
                 </select>
               </FormField>
-              <FormField label="Quantité" htmlFor="quantity">
+              <FormField label={t("Quantité")} htmlFor="quantity">
                 <input id="quantity" type="number" min={1} {...register("quantity")} className="input" />
               </FormField>
-              <FormField label="Dimensions (approx.)" htmlFor="dimensions">
-                <input id="dimensions" {...register("dimensions")} placeholder="ex: 50x30x20 cm" className="input" />
+              <FormField label={t("Dimensions (approx.)")} htmlFor="dimensions">
+                <input id="dimensions" {...register("dimensions")} placeholder={t("ex: 50x30x20 cm")} className="input" />
               </FormField>
-              <FormField label="Poids estimé (kg)" htmlFor="estimated_weight">
+              <FormField label={t("Poids estimé (kg)")} htmlFor="estimated_weight">
                 <input id="estimated_weight" {...register("estimated_weight")} className="input" />
               </FormField>
             </div>
-            <FormField label="Description supplémentaire" htmlFor="description" className="mt-4">
+            <FormField label={t("Description supplémentaire")} htmlFor="description" className="mt-4">
               <textarea id="description" rows={3} {...register("description")} className="input" />
             </FormField>
           </fieldset>
@@ -150,15 +153,15 @@ export default function DemandePage() {
           {/* Pickup & destination */}
           <fieldset className="card">
             <legend className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900">
-              <MapPin className="h-5 w-5 text-brand-blue" /> Ramassage et livraison
+              <MapPin className="h-5 w-5 text-brand-blue" /> {t("Ramassage et livraison")}
             </legend>
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label="Ville de ramassage" htmlFor="pickup_city" required error={errors.pickup_city?.message}>
-                <input id="pickup_city" {...register("pickup_city")} placeholder="ex: Frankfurt, Strasbourg…" className={`input ${errors.pickup_city ? "input-error" : ""}`} />
+              <FormField label={t("Ville de ramassage")} htmlFor="pickup_city" required error={errors.pickup_city?.message}>
+                <input id="pickup_city" {...register("pickup_city")} placeholder={t("ex: Frankfurt, Strasbourg…")} className={`input ${errors.pickup_city ? "input-error" : ""}`} />
               </FormField>
-              <FormField label="Destination" htmlFor="destination_city_id" required error={errors.destination_city_id?.message}>
+              <FormField label={t("Destination")} htmlFor="destination_city_id" required error={errors.destination_city_id?.message}>
                 <select id="destination_city_id" {...register("destination_city_id")} className={`input ${errors.destination_city_id ? "input-error" : ""}`}>
-                  <option value="">Sélectionnez…</option>
+                  <option value="">{t("Sélectionnez…")}</option>
                   {destinations.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.name}
@@ -166,10 +169,10 @@ export default function DemandePage() {
                   ))}
                 </select>
               </FormField>
-              <FormField label="Adresse de ramassage" htmlFor="pickup_address" required error={errors.pickup_address?.message} className="sm:col-span-2">
+              <FormField label={t("Adresse de ramassage")} htmlFor="pickup_address" required error={errors.pickup_address?.message} className="sm:col-span-2">
                 <textarea id="pickup_address" rows={2} {...register("pickup_address")} className={`input ${errors.pickup_address ? "input-error" : ""}`} />
               </FormField>
-              <FormField label="Date de ramassage souhaitée" htmlFor="preferred_pickup_date">
+              <FormField label={t("Date de ramassage souhaitée")} htmlFor="preferred_pickup_date">
                 <input id="preferred_pickup_date" type="date" {...register("preferred_pickup_date")} className="input" />
               </FormField>
             </div>
@@ -178,7 +181,7 @@ export default function DemandePage() {
           {/* Photos */}
           <fieldset className="card">
             <legend className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900">
-              <ImagePlus className="h-5 w-5 text-brand-blue" /> Photos (optionnel)
+              <ImagePlus className="h-5 w-5 text-brand-blue" /> {t("Photos (optionnel)")}
             </legend>
             <input
               id="photos-upload"
@@ -187,21 +190,21 @@ export default function DemandePage() {
               accept="image/*"
               className="w-full text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-brand-gold/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-gold hover:file:bg-brand-gold/20"
             />
-            <p className="mt-2 text-xs text-gray-400">Vous pouvez joindre plusieurs photos. Formats : JPG, PNG, WEBP.</p>
+            <p className="mt-2 text-xs text-gray-400">{t("Vous pouvez joindre plusieurs photos. Formats : JPG, PNG, WEBP.")}</p>
           </fieldset>
 
           {/* Notes & consent */}
           <fieldset className="card">
             <legend className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900">
-              <NotebookPen className="h-5 w-5 text-brand-blue" /> Remarques
+              <NotebookPen className="h-5 w-5 text-brand-blue" /> {t("Remarques")}
             </legend>
-            <FormField label="Remarques supplémentaires" htmlFor="customer_notes">
+            <FormField label={t("Remarques supplémentaires")} htmlFor="customer_notes">
               <textarea id="customer_notes" rows={2} {...register("customer_notes")} className="input" />
             </FormField>
             <div className="mt-4 flex items-start gap-2.5">
               <input id="consent" type="checkbox" {...register("consent")} className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-red focus:ring-brand-red" />
               <label htmlFor="consent" className="text-sm text-gray-600">
-                J&apos;accepte d&apos;être contacté par téléphone ou WhatsApp concernant cette demande. <span className="text-brand-red">*</span>
+                {t("J'accepte d'être contacté par téléphone ou WhatsApp concernant cette demande.")} <span className="text-brand-red">*</span>
               </label>
             </div>
             {errors.consent && <p className="field-error">{errors.consent.message}</p>}
@@ -209,12 +212,12 @@ export default function DemandePage() {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <button type="submit" disabled={submitting} className="btn-primary flex-1 !py-3.5 text-base">
-              {submitting ? <LoadingSpinner className="h-5 w-5" /> : "Envoyer la demande"}
+              {submitting ? <LoadingSpinner className="h-5 w-5" /> : t("Envoyer la demande")}
             </button>
             <WhatsAppCTA className="!py-3.5 sm:w-auto" />
           </div>
           <p className="text-center text-xs text-gray-400">
-            Besoin d&apos;aide pour remplir le formulaire ? Contactez-nous directement sur WhatsApp.
+            {t("Besoin d'aide pour remplir le formulaire ? Contactez-nous directement sur WhatsApp.")}
           </p>
         </form>
       </div>

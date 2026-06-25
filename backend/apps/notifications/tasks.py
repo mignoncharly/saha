@@ -1,6 +1,8 @@
 from celery import shared_task
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
+from django.utils import translation
+from django.utils.translation import gettext as _
 from .models import PushSubscription, NotificationLog
 from .webpush import send_web_push
 from . import emails
@@ -78,9 +80,13 @@ def send_status_change_notification(request_id):
     customer = req.customer
     if not customer:
         return
-    status_label = dict(TransportRequest.STATUS_CHOICES).get(req.status, req.status)
-    title = f"Demande {req.reference_code}"
-    body = f"Statut mis à jour : {status_label}"
+    pref = NotificationPreference.objects.filter(customer=customer).first()
+    language = (pref.language if pref else customer.preferred_language) or 'fr'
+    with translation.override(language):
+        status_label = req.get_status_display()
+        title = _('Request %(reference)s') % {'reference': req.reference_code}
+        body = _('Status updated: %(status)s') % {'status': status_label}
+        log_title = _('Status update %(reference)s') % {'reference': req.reference_code}
 
     # Always record in-app history so the customer sees it in their center.
     CustomerNotification.objects.create(
@@ -88,7 +94,6 @@ def send_status_change_notification(request_id):
     )
 
     # Push delivery honors the customer's status-update preference.
-    pref = NotificationPreference.objects.filter(customer=customer).first()
     if pref and not pref.status_updates:
         return
 
@@ -115,8 +120,8 @@ def send_status_change_notification(request_id):
         except Exception:
             failed += 1
     NotificationLog.objects.create(
-        title=f"Status update {req.reference_code}",
-        body=f"{status_label}",
+        title=log_title,
+        body=str(status_label),
         target_type='request_status',
         sent_count=sent,
         failed_count=failed,
@@ -130,18 +135,29 @@ def send_verification_email(user_id, token):
     except User.DoesNotExist:
         return
     verify_url = f"{settings.FRONTEND_URL}/compte/verify-email?token={token}"
-    subject, text_body, html_body = emails.build_verification_email(verify_url)
+    customer = getattr(user, 'customer_profile', None)
+    language = getattr(customer, 'preferred_language', 'fr') or 'fr'
     try:
-        _send_html_email(subject, text_body, html_body, user.email)
+        with translation.override(language):
+            subject, text_body, html_body = emails.build_verification_email(verify_url)
+            _send_html_email(subject, text_body, html_body, user.email)
     except Exception:
         logger.exception("Failed to send verification email to %s", user.email)
         raise
 
 @shared_task
-def send_password_reset_email(email, reset_url):
-    subject, text_body, html_body = emails.build_password_reset_email(reset_url)
+def send_password_reset_email(user_id, reset_url):
+    from apps.accounts.models import User
     try:
-        _send_html_email(subject, text_body, html_body, email)
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return
+    customer = getattr(user, 'customer_profile', None)
+    language = getattr(customer, 'preferred_language', 'fr') or 'fr'
+    try:
+        with translation.override(language):
+            subject, text_body, html_body = emails.build_password_reset_email(reset_url)
+            _send_html_email(subject, text_body, html_body, user.email)
     except Exception:
-        logger.exception("Failed to send password reset email to %s", email)
+        logger.exception("Failed to send password reset email to %s", user.email)
         raise

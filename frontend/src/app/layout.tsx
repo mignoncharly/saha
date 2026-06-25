@@ -9,15 +9,18 @@ import { LanguageProvider } from "@/lib/i18n";
 import { Toaster } from "sonner";
 import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistration";
 import InstallPWAButton from "@/components/pwa/InstallPWAButton";
+import { getServerTranslation } from "@/lib/i18n-server";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
-export const metadata: Metadata = {
-  title: "SAHA Transport & Logistics – Un colis, un sourire…",
-  description:
-    "Transport de colis, fûts, véhicules et marchandises vers le Cameroun. Ramassages en Europe, livraison à Douala, Yaoundé, Bafoussam.",
-  manifest: "/manifest.json",
-};
+export function generateMetadata(): Metadata {
+  const { t } = getServerTranslation();
+  return {
+    title: t("SAHA Transport & Logistics – Un colis, un sourire…"),
+    description: t("Transport de colis, fûts, véhicules et marchandises vers le Cameroun. Ramassages en Europe, livraison à Douala, Yaoundé, Bafoussam."),
+    manifest: "/manifest.webmanifest",
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -31,10 +34,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { locale } = getServerTranslation();
   return (
-    <html lang="fr">
+    <html lang={locale}>
       <body className={inter.className}>
-        <LanguageProvider>
+        <LanguageProvider initialLocale={locale}>
           <AuthProvider>
             <AppNavbar />
             <main className="min-h-screen">{children}</main>

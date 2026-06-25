@@ -68,8 +68,8 @@ quantity/dimensions/weight, prices (`estimated_price`, `final_price`), notes, a
 unique `reference_code`, and photos (`TransportRequestPhoto`).
 
 Its lifecycle is a **state machine** enforced by
-`apps/logistics/status.py` (`ALLOWED_STATUS_TRANSITIONS`). Status labels are
-French (`STATUS_CHOICES`):
+`apps/logistics/status.py` (`ALLOWED_STATUS_TRANSITIONS`). Status labels use
+lazy Django translations (`STATUS_CHOICES`) and render in French or German:
 
 ```
 new -> contacted -> confirmed -> pickup_scheduled -> received
@@ -96,7 +96,8 @@ and check the admin views/serializers that drive transitions.
 
 ## Frontend (Next.js 14, App Router)
 
-- `frontend/src/app/` — route tree. Public pages are **French** (`page.tsx` home,
+- `frontend/src/app/` — route tree. Public route slugs remain French, while page
+  content renders in French or German (`page.tsx` home,
   `services/`, `tarifs/`, `suivi/`, `demande/`, `calendrier/`, `compte/`,
   `contact/`, `faq/`, `privacy/`). Admin area under `app/admin/`
   (`dashboard`, `requests/[id]`, `prices`, `schedules`, `loading-dates`,
@@ -109,7 +110,11 @@ and check the admin views/serializers that drive transitions.
     `typeof window`) because it's imported by server components too — do not add
     `"use client"` to it.
   - `constants.ts`, `navigation.ts`, `validators.ts` (zod), `i18n.tsx`,
-    `whatsapp.ts`, `pwa.ts`, `faq.ts`.
+    `i18n-config.ts`, `i18n-server.ts`, `whatsapp.ts`, `pwa.ts`, `faq.ts`.
+- Frontend locale state is persisted in the `stl-locale` cookie and local
+  storage. Server components read the cookie; API requests send
+  `Accept-Language`. Django `LocaleMiddleware` selects `fr` or `de`, and backend
+  catalogs live under `backend/locale/<language>/LC_MESSAGES/`.
 - Forms use `react-hook-form` + `zod`; toasts via `sonner`; admin charts via
   `recharts`; icons via `lucide-react`. PWA assets in `public/`.
 - Production: `npm run build` then `next start` on `:3030` (systemd
@@ -147,4 +152,6 @@ and check the admin views/serializers that drive transitions.
 | API calls from UI | `frontend/src/lib/api.ts` |
 | Validation rules | `frontend/src/lib/validators.ts` (zod) |
 
-Keep all user-facing copy in **French** to match the existing app.
+Keep French as the source/default copy and provide a natural German translation
+for every user-facing string. Backend messages must use Django gettext; frontend
+messages must use the shared translation utilities.

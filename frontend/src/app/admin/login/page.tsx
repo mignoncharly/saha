@@ -9,6 +9,7 @@ import AuthCard from "@/components/auth/AuthCard";
 import FormField from "@/components/ui/FormField";
 import PasswordInput from "@/components/ui/PasswordInput";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useTranslation } from "@/lib/i18n";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -17,6 +18,7 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const { login, logout } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,12 +29,12 @@ export default function AdminLoginPage() {
       // Only admin/staff may enter the admin area.
       if (resolveRole(user.role) !== "admin") {
         logout();
-        setError("Ce compte n'a pas accès à l'espace administrateur.");
+        setError(t("Ce compte n'a pas accès à l'espace administrateur."));
         return;
       }
       router.push("/admin/dashboard");
     } catch (err) {
-      setError(parseApiError(err, "Identifiants invalides."));
+      setError(parseApiError(err, t("Identifiants invalides.")));
     } finally {
       setLoading(false);
     }
@@ -41,19 +43,19 @@ export default function AdminLoginPage() {
   return (
     <AuthCard
       icon={<ShieldCheck className="h-6 w-6" />}
-      title="Espace administrateur"
-      subtitle="Connexion réservée à l'équipe STL."
+      title={t("Espace administrateur")}
+      subtitle={t("Connexion réservée à l'équipe STL.")}
     >
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {error && <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        <FormField label="Email" htmlFor="admin-email" required>
+        <FormField label={t("Email")} htmlFor="admin-email" required>
           <input id="admin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="input" />
         </FormField>
-        <FormField label="Mot de passe" htmlFor="admin-password" required>
+        <FormField label={t("Mot de passe")} htmlFor="admin-password" required>
           <PasswordInput id="admin-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </FormField>
         <button type="submit" disabled={loading} className="btn-navy w-full">
-          {loading ? <LoadingSpinner className="h-5 w-5" /> : "Se connecter"}
+          {loading ? <LoadingSpinner className="h-5 w-5" /> : t("Se connecter")}
         </button>
       </form>
     </AuthCard>

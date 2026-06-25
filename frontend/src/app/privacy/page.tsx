@@ -1,5 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
+import { getServerTranslation } from "@/lib/i18n-server";
 
 const sections = [
   {
@@ -29,28 +30,29 @@ const sections = [
 ];
 
 export default function PrivacyPage() {
+  const { t } = getServerTranslation();
   return (
     <>
       <PageHeader
         hero
         icon={<ShieldCheck className="h-8 w-8" />}
-        title="Politique de confidentialité"
-        subtitle="SAHA Transport & Logistics s'engage à protéger vos données personnelles."
+        title={t("Politique de confidentialité")}
+        subtitle={t("SAHA Transport & Logistics s'engage à protéger vos données personnelles.")}
       />
 
       <div className="container-page max-w-3xl py-12">
         <p className="mb-8 text-gray-600">
-          Cette politique explique quelles informations nous collectons et comment elles sont utilisées.
+          {t("Cette politique explique quelles informations nous collectons et comment elles sont utilisées.")}
         </p>
         <div className="space-y-6">
           {sections.map((s) => (
             <section key={s.title} className="card">
-              <h2 className="mb-2 text-lg font-bold text-gray-900">{s.title}</h2>
-              <p className="text-gray-600">{s.body}</p>
+              <h2 className="mb-2 text-lg font-bold text-gray-900">{t(s.title)}</h2>
+              <p className="text-gray-600">{t(s.body)}</p>
             </section>
           ))}
         </div>
-        <p className="mt-8 text-sm text-gray-400">Dernière mise à jour : juin 2026</p>
+        <p className="mt-8 text-sm text-gray-400">{t("Dernière mise à jour : juin 2026")}</p>
       </div>
     </>
   );

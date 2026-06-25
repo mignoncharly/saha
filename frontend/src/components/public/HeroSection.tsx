@@ -1,8 +1,10 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ShieldCheck, MapPin, Bell } from "lucide-react";
 import WhatsAppCTA from "@/components/public/WhatsAppCTA";
 import type { LoadingDate } from "@/types/api";
+import { useTranslation } from "@/lib/i18n";
 
 const badges = [
   { icon: ShieldCheck, label: "Transport fiable & suivi" },
@@ -17,8 +19,9 @@ function formatLoadingDate(iso: string): string {
 }
 
 export default function HeroSection({ nextLoading }: { nextLoading?: LoadingDate | null }) {
+  const { t } = useTranslation();
   const announcement = nextLoading
-    ? `⚠️ Attention, prochain chargement pour le Cameroun, prévu le ${formatLoadingDate(nextLoading.date)}`
+    ? t("⚠️ Attention, prochain chargement pour le Cameroun, prévu le {date}", { date: formatLoadingDate(nextLoading.date) })
     : null;
 
   return (
@@ -44,25 +47,24 @@ export default function HeroSection({ nextLoading }: { nextLoading?: LoadingDate
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-brand-gold ring-1 ring-white/15">
-              🇪🇺 Europe → Cameroun 🇨🇲
+              {t("🇪🇺 Europe → Cameroun 🇨🇲")}
             </span>
             <h1 className="mt-5 font-display text-4xl font-bold leading-tight sm:text-5xl">
-              Transport de colis, fûts, véhicules et marchandises vers le Cameroun
+              {t("Transport de colis, fûts, véhicules et marchandises vers le Cameroun")}
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-blue-100">
-              SAHA Transport &amp; Logistics organise vos ramassages en Europe et vos livraisons à Douala,
-              Yaoundé et Bafoussam.
+              {t("SAHA Transport & Logistics organise vos ramassages en Europe et vos livraisons à Douala, Yaoundé et Bafoussam.")}
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link href="/demande" className="btn-primary !px-7 !py-3.5 text-base">
-                Demander un ramassage <ArrowRight className="h-5 w-5" />
+                {t("cta.request")} <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
                 href="/tarifs"
                 className="btn !px-7 !py-3.5 border border-white/40 bg-transparent text-base text-white hover:bg-white/10"
               >
-                Voir les tarifs
+                {t("cta.viewPrices")}
               </Link>
               <WhatsAppCTA className="!px-7 !py-3.5 text-base" />
             </div>
@@ -71,7 +73,7 @@ export default function HeroSection({ nextLoading }: { nextLoading?: LoadingDate
               {badges.map(({ icon: Icon, label }) => (
                 <li key={label} className="flex items-center gap-2 text-sm text-blue-100">
                   <Icon className="h-5 w-5 text-brand-gold" />
-                  {label}
+                  {t(label)}
                 </li>
               ))}
             </ul>
@@ -81,7 +83,7 @@ export default function HeroSection({ nextLoading }: { nextLoading?: LoadingDate
           <div className="relative">
             <Image
               src="/images/hero.jpg"
-              alt="Équipe SAHA Transport & Logistics chargeant des colis pour le Cameroun"
+              alt={t("Équipe SAHA Transport & Logistics chargeant des colis pour le Cameroun")}
               width={1079}
               height={381}
               priority

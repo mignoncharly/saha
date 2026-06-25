@@ -67,7 +67,7 @@ export default function UserDropdown() {
       >
         <span className="relative flex h-6 w-6 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue">
           <User className="h-3.5 w-3.5" />
-          {unread > 0 && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-brand-red ring-2 ring-white" aria-label={`${unread} non lues`} />}
+          {unread > 0 && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-brand-red ring-2 ring-white" aria-label={t("{count} non lues", { count: unread })} />}
         </span>
         {user && role === "admin" ? (
           <span className="badge bg-brand-gold/15 font-semibold text-brand-gold">Admin</span>
@@ -113,7 +113,7 @@ export default function UserDropdown() {
                 <Truck className="h-4 w-4" /> {t("account.myRequests")}
               </Link>
               <Link href="/compte/notifications" onClick={close} className={itemClass} role="menuitem">
-                <Bell className="h-4 w-4" /> Notifications
+                <Bell className="h-4 w-4" /> {t("Notifications")}
                 {unread > 0 && <span className="ml-auto badge bg-brand-red text-white">{unread}</span>}
               </Link>
             </>

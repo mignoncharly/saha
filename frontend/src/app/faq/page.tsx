@@ -6,10 +6,13 @@ import PageHeader from "@/components/ui/PageHeader";
 import FAQAccordion from "@/components/public/FAQAccordion";
 import EmptyState from "@/components/ui/EmptyState";
 import WhatsAppCTA from "@/components/public/WhatsAppCTA";
-import { faqItems } from "@/lib/faq";
+import { getFaqItems } from "@/lib/faq";
+import { useTranslation } from "@/lib/i18n";
 
 export default function FAQPage() {
   const [query, setQuery] = useState("");
+  const { t } = useTranslation();
+  const faqItems = getFaqItems(t);
 
   const q = query.trim().toLowerCase();
   const filtered = q
@@ -21,8 +24,8 @@ export default function FAQPage() {
       <PageHeader
         hero
         icon={<HelpCircle className="h-8 w-8" />}
-        title="Foire aux questions"
-        subtitle="Tout ce qu'il faut savoir sur le ramassage, les destinations, les prix et le suivi."
+        title={t("Foire aux questions")}
+        subtitle={t("Tout ce qu'il faut savoir sur le ramassage, les destinations, les prix et le suivi.")}
       />
 
       <div className="container-page max-w-3xl py-12">
@@ -32,8 +35,8 @@ export default function FAQPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher une question…"
-            aria-label="Rechercher dans la FAQ"
+            placeholder={t("Rechercher une question…")}
+            aria-label={t("Rechercher dans la FAQ")}
             className="input pl-11"
           />
         </div>
@@ -43,16 +46,16 @@ export default function FAQPage() {
         ) : (
           <EmptyState
             icon={<HelpCircle className="h-7 w-7" />}
-            title="Aucun résultat"
-            description="Aucune question ne correspond à votre recherche. Contactez-nous, nous vous répondrons directement."
+            title={t("Aucun résultat")}
+            description={t("Aucune question ne correspond à votre recherche. Contactez-nous, nous vous répondrons directement.")}
             action={<WhatsAppCTA />}
           />
         )}
 
         <div className="mt-10 rounded-2xl bg-brand-light p-6 text-center">
-          <p className="text-gray-700">Vous ne trouvez pas votre réponse ?</p>
+          <p className="text-gray-700">{t("Vous ne trouvez pas votre réponse ?")}</p>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
-            <Link href="/contact" className="btn-primary">Nous contacter</Link>
+            <Link href="/contact" className="btn-primary">{t("Nous contacter")}</Link>
             <WhatsAppCTA />
           </div>
         </div>

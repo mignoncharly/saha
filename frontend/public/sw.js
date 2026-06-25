@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stl-v1';
+const CACHE_NAME = 'stl-v2';
 const OFFLINE_URL = '/offline.html';
 const ASSETS = [
   '/',
@@ -6,6 +6,7 @@ const ASSETS = [
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/icons/badge-96.png',
 ];
 
 self.addEventListener('install', event => {
@@ -40,7 +41,7 @@ self.addEventListener('push', event => {
     const options = {
       body: data.body,
       icon: data.icon || '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
+      badge: '/icons/badge-96.png',
       vibrate: [200, 100, 200],
       data: { url: data.url || '/' },
     };

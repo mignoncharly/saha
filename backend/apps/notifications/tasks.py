@@ -1,12 +1,20 @@
 from celery import shared_task
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from .models import PushSubscription, NotificationLog
 from .webpush import send_web_push
+from . import emails
 import json
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _send_html_email(subject, text_body, html_body, to_email):
+    """Send a multipart email (plain-text + HTML) to a single recipient."""
+    msg = EmailMultiAlternatives(subject, text_body, settings.DEFAULT_FROM_EMAIL, [to_email])
+    msg.attach_alternative(html_body, "text/html")
+    msg.send(fail_silently=False)
 
 @shared_task
 def send_broadcast_notification(notification_log_id):
@@ -122,28 +130,18 @@ def send_verification_email(user_id, token):
     except User.DoesNotExist:
         return
     verify_url = f"{settings.FRONTEND_URL}/compte/verify-email?token={token}"
+    subject, text_body, html_body = emails.build_verification_email(verify_url)
     try:
-        send_mail(
-            'STL - Vérification de votre adresse email',
-            f'Bonjour,\n\nVeuillez vérifier votre adresse email en cliquant sur ce lien : {verify_url}\n\nL\'équipe STL.',
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-            fail_silently=False,
-        )
+        _send_html_email(subject, text_body, html_body, user.email)
     except Exception:
         logger.exception("Failed to send verification email to %s", user.email)
         raise
 
 @shared_task
 def send_password_reset_email(email, reset_url):
+    subject, text_body, html_body = emails.build_password_reset_email(reset_url)
     try:
-        send_mail(
-            'STL - Réinitialisation de mot de passe',
-            f'Bonjour,\n\nVous avez demandé la réinitialisation de votre mot de passe. Cliquez ici : {reset_url}\n\nSi vous n\'êtes pas à l\'origine de cette demande, ignorez ce message.',
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
+        _send_html_email(subject, text_body, html_body, email)
     except Exception:
         logger.exception("Failed to send password reset email to %s", email)
         raise

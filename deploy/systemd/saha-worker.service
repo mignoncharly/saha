@@ -1,0 +1,17 @@
+[Unit]
+Description=SAHA-STL Celery Worker
+After=network.target postgresql.service saha-redis.service saha-api.service
+Wants=saha-redis.service
+
+[Service]
+User=mignon
+Group=mignon
+WorkingDirectory=/home/mignon/saha/backend
+Environment=DJANGO_SETTINGS_MODULE=config.settings.production
+ExecStart=/home/mignon/saha/backend/.venv/bin/celery -A config worker --loglevel=INFO --concurrency=2
+Restart=always
+RestartSec=5
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target

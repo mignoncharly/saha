@@ -1,0 +1,14 @@
+[Unit]
+Description=SAHA-STL Redis
+After=network.target
+
+[Service]
+Type=notify
+User=mignon
+Group=mignon
+ExecStart=/usr/bin/redis-server /home/mignon/saha/deploy/redis-saha.conf --supervised systemd
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

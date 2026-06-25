@@ -1,0 +1,16 @@
+[Unit]
+Description=SAHA-STL Celery Beat
+After=network.target postgresql.service saha-redis.service
+Wants=saha-redis.service
+
+[Service]
+User=mignon
+Group=mignon
+WorkingDirectory=/home/mignon/saha/backend
+Environment=DJANGO_SETTINGS_MODULE=config.settings.production
+ExecStart=/home/mignon/saha/backend/.venv/bin/celery -A config beat --loglevel=INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

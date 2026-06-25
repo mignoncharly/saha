@@ -1,0 +1,16 @@
+[Unit]
+Description=SAHA-STL Next.js Frontend
+After=network.target
+
+[Service]
+User=mignon
+Group=mignon
+WorkingDirectory=/home/mignon/saha/frontend
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npm run start -- --hostname 127.0.0.1 --port 3030
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

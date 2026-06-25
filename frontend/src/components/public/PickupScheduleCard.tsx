@@ -1,19 +1,15 @@
+"use client";
 import { CalendarDays, MapPin } from "lucide-react";
 import type { PickupSchedule } from "@/types/api";
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
+import { useTranslation } from "@/lib/i18n";
 
 interface Props {
   schedule: PickupSchedule;
 }
 
 export default function PickupScheduleCard({ schedule }: Props) {
+  const { formatDate } = useTranslation();
+  const formatted = (date: string) => formatDate(date, { day: "numeric", month: "long", year: "numeric" });
   return (
     <div className="flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-card transition-shadow hover:shadow-soft">
       <div className="flex items-start gap-3">
@@ -27,9 +23,9 @@ export default function PickupScheduleCard({ schedule }: Props) {
       </div>
       <div className="mt-4 inline-flex w-fit items-center gap-2 rounded-lg bg-brand-blue/5 px-3 py-1.5 text-sm font-semibold text-brand-blue">
         <CalendarDays className="h-4 w-4" />
-        {formatDate(schedule.start_date)}
+        {formatted(schedule.start_date)}
         {schedule.end_date && schedule.end_date !== schedule.start_date && (
-          <> – {formatDate(schedule.end_date)}</>
+          <> – {formatted(schedule.end_date)}</>
         )}
       </div>
       {schedule.notes && <p className="mt-3 text-xs text-gray-400">{schedule.notes}</p>}

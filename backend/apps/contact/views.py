@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .serializers import ContactSerializer
 from apps.core.throttles import ContactRateThrottle
+from django.utils.translation import gettext as _
 
 class ContactCreateView(generics.CreateAPIView):
     throttle_classes = [ContactRateThrottle]
@@ -16,9 +17,9 @@ class ContactCreateView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         # Send email to admin
-        subject = f"STL Contact – {data['name']}"
-        message = f"Nom: {data['name']}\nEmail: {data['email']}\nMessage:\n{data['message']}"
+        subject = _("STL contact — %(name)s") % {'name': data['name']}
+        message = _("Name: %(name)s\nEmail: %(email)s\nMessage:\n%(message)s") % data
         from_email = data['email']
         recipient_list = [settings.DEFAULT_FROM_EMAIL]  # admin email
         send_mail(subject, message, from_email, recipient_list, fail_silently=True)
-        return Response({'detail': 'Message envoyé avec succès.'}, status=status.HTTP_201_CREATED)
+        return Response({'detail': _('Message sent successfully.')}, status=status.HTTP_201_CREATED)

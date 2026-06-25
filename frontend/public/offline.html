@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0A2540">
-  <title>STL — Hors ligne</title>
+  <title>STL — Offline</title>
   <style>
     * { box-sizing: border-box; margin: 0; }
     body {
@@ -42,9 +42,20 @@
 <body>
   <div class="card">
     <div class="logo">📦</div>
-    <h1>Vous êtes hors ligne</h1>
-    <p>Impossible de charger SAHA Transport &amp; Logistics. Vérifiez votre connexion internet, puis réessayez.</p>
-    <button onclick="location.reload()">Réessayer</button>
+    <h1 id="offline-title"></h1>
+    <p id="offline-message"></p>
+    <button id="retry" onclick="location.reload()"></button>
   </div>
+  <script>
+    const locale = localStorage.getItem('stl-locale') || (document.cookie.match(/(?:^|; )stl-locale=([^;]+)/) || [])[1] || navigator.language;
+    const de = String(locale).toLowerCase().startsWith('de');
+    document.documentElement.lang = de ? 'de' : 'fr';
+    document.title = de ? 'STL — Offline' : 'STL — Hors ligne';
+    document.getElementById('offline-title').textContent = de ? 'Sie sind offline' : 'Vous êtes hors ligne';
+    document.getElementById('offline-message').textContent = de
+      ? 'SAHA Transport & Logistics kann nicht geladen werden. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.'
+      : 'Impossible de charger SAHA Transport & Logistics. Vérifiez votre connexion internet, puis réessayez.';
+    document.getElementById('retry').textContent = de ? 'Erneut versuchen' : 'Réessayer';
+  </script>
 </body>
 </html>

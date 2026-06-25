@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import type { ServiceType } from "@/types/api";
 import { Search, X } from "lucide-react";
 import { statusLabel } from "@/components/ui/StatusBadge";
+import { useTranslation } from "@/lib/i18n";
 
 interface Filters {
   status: string[];
@@ -36,6 +37,7 @@ const EMPTY: Filters = { status: [], pickup_city: "", service_type: "", date_fro
 
 export default function AdminRequestFilters({ filters, onFilterChange }: Props) {
   const [services, setServices] = useState<ServiceType[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     api.get<ServiceType[]>("/admin/services/").then(setServices).catch(console.error);
@@ -60,13 +62,13 @@ export default function AdminRequestFilters({ filters, onFilterChange }: Props) 
     <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="lg:col-span-2">
-          <label className="label" htmlFor="f-search">Recherche</label>
+          <label className="label" htmlFor="f-search">{t("Recherche")}</label>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               id="f-search"
               type="text"
-              placeholder="Réf, client…"
+              placeholder={t("Réf, client…")}
               value={filters.search}
               onChange={(e) => onFilterChange({ ...filters, search: e.target.value })}
               className="input pl-9"
@@ -74,34 +76,34 @@ export default function AdminRequestFilters({ filters, onFilterChange }: Props) 
           </div>
         </div>
         <div>
-          <label className="label" htmlFor="f-service">Type de service</label>
+          <label className="label" htmlFor="f-service">{t("Type de service")}</label>
           <select id="f-service" value={filters.service_type} onChange={(e) => onFilterChange({ ...filters, service_type: e.target.value })} className="input">
-            <option value="">Tous</option>
+            <option value="">{t("Tous")}</option>
             {services.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className="label" htmlFor="f-city">Ville de ramassage</label>
-          <input id="f-city" type="text" value={filters.pickup_city} onChange={(e) => onFilterChange({ ...filters, pickup_city: e.target.value })} placeholder="ex: Frankfurt" className="input" />
+          <label className="label" htmlFor="f-city">{t("Ville de ramassage")}</label>
+          <input id="f-city" type="text" value={filters.pickup_city} onChange={(e) => onFilterChange({ ...filters, pickup_city: e.target.value })} placeholder={t("ex: Frankfurt")} className="input" />
         </div>
         <div>
-          <label className="label" htmlFor="f-from">Du</label>
+          <label className="label" htmlFor="f-from">{t("Du")}</label>
           <input id="f-from" type="date" value={filters.date_from} onChange={(e) => onFilterChange({ ...filters, date_from: e.target.value })} className="input" />
         </div>
         <div>
-          <label className="label" htmlFor="f-to">Au</label>
+          <label className="label" htmlFor="f-to">{t("Au")}</label>
           <input id="f-to" type="date" value={filters.date_to} onChange={(e) => onFilterChange({ ...filters, date_to: e.target.value })} className="input" />
         </div>
       </div>
 
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-xs font-medium text-gray-500">Statuts</span>
+          <span className="text-xs font-medium text-gray-500">{t("Statuts")}</span>
           {hasActiveFilters && (
             <button onClick={() => onFilterChange(EMPTY)} className="inline-flex items-center gap-1 text-xs font-medium text-brand-blue hover:underline">
-              <X className="h-3.5 w-3.5" /> Réinitialiser
+              <X className="h-3.5 w-3.5" /> {t("Réinitialiser")}
             </button>
           )}
         </div>
@@ -117,7 +119,7 @@ export default function AdminRequestFilters({ filters, onFilterChange }: Props) 
                   active ? "border-brand-blue bg-brand-blue text-white" : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
                 }`}
               >
-                {statusLabel(value)}
+                {t(statusLabel(value))}
               </button>
             );
           })}

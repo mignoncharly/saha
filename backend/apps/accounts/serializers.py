@@ -44,10 +44,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(max_length=255)
     phone = serializers.CharField(max_length=50, required=False)
     password = serializers.CharField(write_only=True)
+    language = serializers.ChoiceField(choices=('fr', 'de'), default='fr', write_only=True)
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'full_name', 'phone')
+        fields = ('email', 'password', 'full_name', 'phone', 'language')
 
     def validate_email(self, value):
         value = value.lower().strip()
@@ -65,12 +66,14 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         full_name = validated_data.pop('full_name')
         phone = validated_data.pop('phone', '')
+        language = validated_data.pop('language', 'fr')
         user = User.objects.create_user(**validated_data, role='customer')
         Customer.objects.create(
             user=user,
             full_name=full_name,
             phone=phone,
             email=validated_data['email'],
+            preferred_language=language,
         )
         # Generate email verification token
         token = uuid.uuid4().hex

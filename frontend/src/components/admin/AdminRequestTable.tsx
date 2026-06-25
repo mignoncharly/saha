@@ -8,6 +8,7 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Download, CheckSquare, Square, Inbox } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 interface Filters {
   status: string[];
@@ -35,6 +36,7 @@ const BULK_OPTIONS = [
 ];
 
 export default function AdminRequestTable({ filters }: Props) {
+  const { t, formatDate } = useTranslation();
   const [requests, setRequests] = useState<TransportRequestListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -79,7 +81,7 @@ export default function AdminRequestTable({ filters }: Props) {
     try {
       await downloadFile(`/admin/requests/export/csv/?${params.toString()}`, "demandes.csv");
     } catch {
-      toast.error("Erreur lors de l'export CSV.");
+      toast.error(t("Erreur lors de l'export CSV."));
     }
   };
 
@@ -99,43 +101,43 @@ export default function AdminRequestTable({ filters }: Props) {
     if (!bulkStatus || selectedIds.size === 0) return;
     try {
       await api.post("/admin/requests/bulk/", { ids: Array.from(selectedIds), status: bulkStatus });
-      toast.success(`${selectedIds.size} demande(s) mise(s) à jour.`);
+      toast.success(t("{count} demande(s) mise(s) à jour.", { count: selectedIds.size }));
       setSelectedIds(new Set());
       setBulkStatus("");
       fetchRequests();
     } catch {
-      toast.error("Erreur lors de la mise à jour groupée.");
+      toast.error(t("Erreur lors de la mise à jour groupée."));
     }
   };
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-gray-900">Demandes ({totalCount})</h2>
+        <h2 className="text-lg font-semibold text-gray-900">{t("Demandes ({count})", { count: totalCount })}</h2>
         <button onClick={handleExportCSV} className="btn-secondary !px-3 !py-2 text-sm">
-          <Download className="h-4 w-4" /> Export CSV
+          <Download className="h-4 w-4" /> {t("Export CSV")}
         </button>
       </div>
 
       {selectedIds.size > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-brand-blue/20 bg-brand-blue/5 p-3">
-          <span className="text-sm font-medium">{selectedIds.size} sélectionnée(s)</span>
+          <span className="text-sm font-medium">{t("{count} sélectionnée(s)", { count: selectedIds.size })}</span>
           <select value={bulkStatus} onChange={(e) => setBulkStatus(e.target.value)} className="input !w-auto !py-1.5 text-sm">
-            <option value="">Action groupée…</option>
+            <option value="">{t("Action groupée…")}</option>
             {BULK_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>{t(o.label)}</option>
             ))}
           </select>
           <button onClick={handleBulkStatusUpdate} className="btn-primary !px-3 !py-1.5 text-sm" disabled={!bulkStatus}>
-            Appliquer
+            {t("Appliquer")}
           </button>
         </div>
       )}
 
       {loading ? (
-        <LoadingState label="Chargement des demandes…" />
+        <LoadingState label={t("Chargement de vos demandes…")} />
       ) : requests.length === 0 ? (
-        <EmptyState icon={<Inbox className="h-7 w-7" />} title="Aucune demande trouvée" description="Aucune demande ne correspond aux filtres sélectionnés." />
+        <EmptyState icon={<Inbox className="h-7 w-7" />} title={t("Aucune demande trouvée")} description={t("Aucune demande ne correspond aux filtres sélectionnés.")} />
       ) : (
         <>
           {/* Desktop table */}
@@ -144,16 +146,16 @@ export default function AdminRequestTable({ filters }: Props) {
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
                   <th className="w-10 px-3 py-3">
-                    <button onClick={selectAll} aria-label="Tout sélectionner" className="text-gray-500 hover:text-gray-700">
+                    <button onClick={selectAll} aria-label={t("Tout sélectionner")} className="text-gray-500 hover:text-gray-700">
                       {selectedIds.size === requests.length ? <CheckSquare className="h-4 w-4 text-brand-blue" /> : <Square className="h-4 w-4" />}
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold">Réf.</th>
-                  <th className="px-4 py-3 text-left font-semibold">Client</th>
-                  <th className="px-4 py-3 text-left font-semibold">Ramassage</th>
-                  <th className="px-4 py-3 text-left font-semibold">Destination</th>
-                  <th className="px-4 py-3 text-left font-semibold">Statut</th>
-                  <th className="px-4 py-3 text-left font-semibold">Date</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t("Réf.")}</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t("Client")}</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t("Ramassage")}</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t("Destination")}</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t("Statut")}</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t("Date")}</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -161,7 +163,7 @@ export default function AdminRequestTable({ filters }: Props) {
                 {requests.map((req) => (
                   <tr key={req.id} className="border-t border-gray-100 hover:bg-gray-50">
                     <td className="px-3 py-3">
-                      <button onClick={() => toggleSelect(req.id)} aria-label="Sélectionner" className="text-gray-500 hover:text-gray-700">
+                      <button onClick={() => toggleSelect(req.id)} aria-label={t("Sélectionner")} className="text-gray-500 hover:text-gray-700">
                         {selectedIds.has(req.id) ? <CheckSquare className="h-4 w-4 text-brand-blue" /> : <Square className="h-4 w-4" />}
                       </button>
                     </td>
@@ -170,9 +172,9 @@ export default function AdminRequestTable({ filters }: Props) {
                     <td className="px-4 py-3">{req.pickup_city}</td>
                     <td className="px-4 py-3">{req.destination_name}</td>
                     <td className="px-4 py-3"><StatusBadge status={req.status} /></td>
-                    <td className="px-4 py-3 text-gray-500">{new Date(req.created_at).toLocaleDateString("fr-FR")}</td>
+                    <td className="px-4 py-3 text-gray-500">{formatDate(req.created_at)}</td>
                     <td className="px-4 py-3">
-                      <Link href={`/admin/requests/${req.id}`} className="font-medium text-brand-blue hover:underline">Détails</Link>
+                      <Link href={`/admin/requests/${req.id}`} className="font-medium text-brand-blue hover:underline">{t("Détails")}</Link>
                     </td>
                   </tr>
                 ))}
@@ -185,7 +187,7 @@ export default function AdminRequestTable({ filters }: Props) {
             {requests.map((req) => (
               <div key={req.id} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-card">
                 <div className="flex items-start justify-between gap-3">
-                  <button onClick={() => toggleSelect(req.id)} className="mt-0.5 text-gray-500" aria-label="Sélectionner">
+                  <button onClick={() => toggleSelect(req.id)} className="mt-0.5 text-gray-500" aria-label={t("Sélectionner")}>
                     {selectedIds.has(req.id) ? <CheckSquare className="h-5 w-5 text-brand-blue" /> : <Square className="h-5 w-5" />}
                   </button>
                   <div className="min-w-0 flex-1">
@@ -199,8 +201,8 @@ export default function AdminRequestTable({ filters }: Props) {
                       {req.destination_name ? ` → ${req.destination_name}` : ""}
                     </p>
                     <div className="mt-2 flex items-center justify-between">
-                      <span className="text-xs text-gray-400">{new Date(req.created_at).toLocaleDateString("fr-FR")}</span>
-                      <Link href={`/admin/requests/${req.id}`} className="text-sm font-medium text-brand-blue hover:underline">Détails</Link>
+                      <span className="text-xs text-gray-400">{formatDate(req.created_at)}</span>
+                      <Link href={`/admin/requests/${req.id}`} className="text-sm font-medium text-brand-blue hover:underline">{t("Détails")}</Link>
                     </div>
                   </div>
                 </div>
@@ -211,11 +213,11 @@ export default function AdminRequestTable({ filters }: Props) {
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="btn-secondary !px-3 !py-2 disabled:opacity-50">
-                <ChevronLeft className="h-4 w-4" /> Précédent
+                <ChevronLeft className="h-4 w-4" /> {t("Précédent")}
               </button>
-              <span className="text-sm text-gray-500">Page {page} / {totalPages}</span>
+              <span className="text-sm text-gray-500">{t("Page {page} / {total}", { page, total: totalPages })}</span>
               <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="btn-secondary !px-3 !py-2 disabled:opacity-50">
-                Suivant <ChevronRight className="h-4 w-4" />
+                {t("Suivant")} <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           )}

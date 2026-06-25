@@ -1,6 +1,8 @@
+"use client";
 import Link from "next/link";
 import { Package, ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
+import { useTranslation } from "@/lib/i18n";
 
 interface AuthCardProps {
   title: string;
@@ -11,6 +13,7 @@ interface AuthCardProps {
 }
 
 export default function AuthCard({ title, subtitle, icon, children, footer }: AuthCardProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-brand-light px-4 py-12">
       <div className="w-full max-w-md">
@@ -41,7 +44,7 @@ export default function AuthCard({ title, subtitle, icon, children, footer }: Au
           href="/"
           className="mt-6 flex items-center justify-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-brand-blue"
         >
-          <ArrowLeft className="h-4 w-4" /> Retour au site
+          <ArrowLeft className="h-4 w-4" /> {t("Retour au site")}
         </Link>
       </div>
     </div>

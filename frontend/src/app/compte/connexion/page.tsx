@@ -10,6 +10,7 @@ import AuthCard from "@/components/auth/AuthCard";
 import FormField from "@/components/ui/FormField";
 import PasswordInput from "@/components/ui/PasswordInput";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useTranslation } from "@/lib/i18n";
 
 export default function CustomerLoginPage() {
   const [email, setEmail] = useState("");
@@ -18,6 +19,7 @@ export default function CustomerLoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,10 +27,10 @@ export default function CustomerLoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      toast.success("Connexion réussie.");
+      toast.success(t("Connexion réussie."));
       router.push("/compte");
     } catch (err) {
-      const message = parseApiError(err, "Identifiants invalides.");
+      const message = parseApiError(err, t("Identifiants invalides."));
       setError(message);
       toast.error(message);
     } finally {
@@ -39,32 +41,32 @@ export default function CustomerLoginPage() {
   return (
     <AuthCard
       icon={<LogIn className="h-6 w-6" />}
-      title="Connexion"
-      subtitle="Accédez à votre espace pour suivre vos demandes."
+      title={t("Connexion")}
+      subtitle={t("Accédez à votre espace pour suivre vos demandes.")}
       footer={
         <>
-          Pas encore de compte ?{" "}
+          {t("Pas encore de compte ?")}{" "}
           <Link href="/compte/inscription" className="font-semibold text-brand-blue hover:underline">
-            S&apos;inscrire
+            {t("S'inscrire")}
           </Link>
         </>
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {error && <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        <FormField label="Email" htmlFor="email" required>
+        <FormField label={t("Email")} htmlFor="email" required>
           <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="input" />
         </FormField>
-        <FormField label="Mot de passe" htmlFor="password" required>
+        <FormField label={t("Mot de passe")} htmlFor="password" required>
           <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </FormField>
         <div className="text-right">
           <Link href="/compte/mot-de-passe-oublie" className="text-sm text-brand-blue hover:underline">
-            Mot de passe oublié ?
+            {t("Mot de passe oublié ?")}
           </Link>
         </div>
         <button type="submit" disabled={loading} className="btn-primary w-full">
-          {loading ? <LoadingSpinner className="h-5 w-5" /> : "Se connecter"}
+          {loading ? <LoadingSpinner className="h-5 w-5" /> : t("Se connecter")}
         </button>
       </form>
     </AuthCard>

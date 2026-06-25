@@ -2,6 +2,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { api } from "@/lib/api";
 import { setToken, removeToken, getToken } from "@/lib/auth";
+import { useTranslation } from "@/lib/i18n";
 
 interface User {
   id: number;
@@ -16,6 +17,7 @@ interface RegisterPayload {
   password: string;
   full_name: string;
   phone?: string;
+  language?: string;
 }
 
 interface AuthContextType {
@@ -29,6 +31,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { locale } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (payload: RegisterPayload) => {
-    const res = await api.post<{ token: string; user: User }>("/auth/register/", payload);
+    const res = await api.post<{ token: string; user: User }>("/auth/register/", { ...payload, language: locale });
     setToken(res.token);
     setUser(res.user);
     return res.user;

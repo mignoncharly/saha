@@ -1,18 +1,21 @@
 "use client";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { faqItems as defaultItems, type FAQItem } from "@/lib/faq";
+import { getFaqItems, type FAQItem } from "@/lib/faq";
+import { useTranslation } from "@/lib/i18n";
 
 interface Props {
   items?: FAQItem[];
 }
 
-export default function FAQAccordion({ items = defaultItems }: Props) {
+export default function FAQAccordion({ items }: Props) {
+  const { t } = useTranslation();
+  const translatedItems = items || getFaqItems(t);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
     <div className="space-y-3">
-      {items.map((item, idx) => {
+      {translatedItems.map((item, idx) => {
         const open = openIndex === idx;
         const panelId = `faq-panel-${idx}`;
         const buttonId = `faq-button-${idx}`;

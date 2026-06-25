@@ -6,6 +6,7 @@ Each builder returns a ``(subject, text_body, html_body)`` tuple; the plain-text
 body is the fallback for clients that don't render HTML.
 """
 from django.conf import settings
+from django.utils.translation import get_language, gettext as _
 
 # Brand palette (mirrors frontend/tailwind.config.ts)
 NAVY = "#0A2540"
@@ -29,9 +30,13 @@ def _layout(preheader, heading, intro_html, button_label, button_url, after_html
     site = settings.FRONTEND_URL.rstrip("/")
     whatsapp = _whatsapp_link()
     year = __import__("datetime").date.today().year
+    route_label = _('Europe → Cameroon')
+    copy_link_label = _('If the button does not work, copy this link into your browser:')
+    company_description = _('Parcel and freight transport from Europe to Cameroon (Douala, Yaoundé, Bafoussam).')
+    rights_label = _('All rights reserved.')
     return f"""\
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{get_language() or 'fr'}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,7 +56,7 @@ def _layout(preheader, heading, intro_html, button_label, button_url, after_html
         SAHA <span style="color:{GOLD};">&#9679;</span>
         <div style="font-size:11px;font-weight:normal;letter-spacing:3px;color:#9DB2CE;margin-top:4px;">TRANSPORT &amp; LOGISTICS</div>
       </td>
-      <td align="right" style="font-family:Arial,Helvetica,sans-serif;color:#9DB2CE;font-size:12px;">Europe &#8594; Cameroun</td>
+      <td align="right" style="font-family:Arial,Helvetica,sans-serif;color:#9DB2CE;font-size:12px;">{route_label}</td>
     </tr></table>
   </td></tr>
   <tr><td style="height:4px;background:{GOLD};font-size:0;line-height:0;">&nbsp;</td></tr>
@@ -73,7 +78,7 @@ def _layout(preheader, heading, intro_html, button_label, button_url, after_html
 
   <tr><td style="padding:8px 32px 28px 32px;font-family:Arial,Helvetica,sans-serif;">
     <p style="font-size:12px;line-height:1.6;color:{MUTED};margin:8px 0 0 0;">
-      Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur&nbsp;:<br>
+      {copy_link_label}<br>
       <a href="{button_url}" target="_blank" style="color:{BLUE};word-break:break-all;">{button_url}</a>
     </p>
     {after_html}
@@ -83,7 +88,7 @@ def _layout(preheader, heading, intro_html, button_label, button_url, after_html
   <tr><td style="background:{LIGHT};padding:24px 32px;border-top:1px solid {BORDER};font-family:Arial,Helvetica,sans-serif;">
     <p style="margin:0 0 6px 0;font-size:13px;color:{NAVY};font-weight:bold;">SAHA Transport &amp; Logistics</p>
     <p style="margin:0 0 10px 0;font-size:12px;line-height:1.6;color:{MUTED};">
-      Transport de colis et fret de l'Europe vers le Cameroun (Douala, Yaound&eacute;, Bafoussam).
+      {company_description}
     </p>
     <p style="margin:0;font-size:12px;color:{MUTED};">
       <a href="{whatsapp}" style="color:{BLUE};text-decoration:none;">WhatsApp&nbsp;{WHATSAPP_NUMBER}</a>
@@ -92,7 +97,7 @@ def _layout(preheader, heading, intro_html, button_label, button_url, after_html
       &nbsp;&bull;&nbsp;
       <a href="{site}" style="color:{BLUE};text-decoration:none;">{site.replace('https://','')}</a>
     </p>
-    <p style="margin:14px 0 0 0;font-size:11px;color:#9AA5B1;">&copy; {year} SAHA Transport &amp; Logistics. Tous droits r&eacute;serv&eacute;s.</p>
+    <p style="margin:14px 0 0 0;font-size:11px;color:#9AA5B1;">&copy; {year} SAHA Transport &amp; Logistics. {rights_label}</p>
   </td></tr>
 
 </table>
@@ -103,32 +108,31 @@ def _layout(preheader, heading, intro_html, button_label, button_url, after_html
 
 
 def build_verification_email(verify_url):
-    subject = "Vérifiez votre adresse email — SAHA Transport & Logistics"
+    subject = _("Verify your email address — SAHA Transport & Logistics")
     text = (
-        "Bonjour,\n\n"
-        "Bienvenue chez SAHA Transport & Logistics !\n\n"
-        "Veuillez confirmer votre adresse email en cliquant sur ce lien :\n"
+        _("Hello,") + "\n\n"
+        + _("Welcome to SAHA Transport & Logistics!") + "\n\n"
+        + _("Please confirm your email address by opening this link:") + "\n"
         f"{verify_url}\n\n"
-        "Ce lien est valable 24 heures.\n\n"
-        "Si vous n'avez pas créé de compte, ignorez ce message.\n\n"
-        "L'équipe SAHA Transport & Logistics"
+        + _("This link is valid for 24 hours.") + "\n\n"
+        + _("If you did not create an account, you can ignore this message.") + "\n\n"
+        + _("The SAHA Transport & Logistics team")
     )
     intro = (
-        "Bonjour,<br><br>"
-        "Bienvenue chez <strong>SAHA Transport &amp; Logistics</strong>&nbsp;! "
-        "Il ne reste qu'une étape&nbsp;: confirmez votre adresse email pour "
-        "sécuriser votre compte et suivre vos expéditions."
+        _("Hello,") + "<br><br>"
+        + _("Welcome to <strong>SAHA Transport &amp; Logistics</strong>! ")
+        + _("One final step: confirm your email address to secure your account and track your shipments.")
     )
     after = (
         f"<p style='font-size:12px;color:{MUTED};margin:16px 0 0 0;'>"
-        "Ce lien est valable 24&nbsp;heures. Si vous n'avez pas créé de compte, "
-        "vous pouvez ignorer ce message.</p>"
+        + _("This link is valid for 24 hours. If you did not create an account, you can ignore this message.")
+        + "</p>"
     )
     html = _layout(
-        preheader="Confirmez votre adresse email pour activer votre compte SAHA.",
-        heading="Confirmez votre adresse email",
+        preheader=_("Confirm your email address to activate your SAHA account."),
+        heading=_("Confirm your email address"),
         intro_html=intro,
-        button_label="Vérifier mon email",
+        button_label=_("Verify my email address"),
         button_url=verify_url,
         after_html=after,
     )
@@ -136,31 +140,29 @@ def build_verification_email(verify_url):
 
 
 def build_password_reset_email(reset_url):
-    subject = "Réinitialisation de votre mot de passe — SAHA Transport & Logistics"
+    subject = _("Reset your password — SAHA Transport & Logistics")
     text = (
-        "Bonjour,\n\n"
-        "Vous avez demandé la réinitialisation de votre mot de passe.\n"
-        "Cliquez sur ce lien pour en choisir un nouveau :\n"
+        _("Hello,") + "\n\n"
+        + _("You requested a password reset.") + "\n"
+        + _("Open this link to choose a new password:") + "\n"
         f"{reset_url}\n\n"
-        "Si vous n'êtes pas à l'origine de cette demande, ignorez ce message ; "
-        "votre mot de passe restera inchangé.\n\n"
-        "L'équipe SAHA Transport & Logistics"
+        + _("If you did not request this, ignore this message; your password will remain unchanged.") + "\n\n"
+        + _("The SAHA Transport & Logistics team")
     )
     intro = (
-        "Bonjour,<br><br>"
-        "Vous avez demandé la réinitialisation de votre mot de passe. "
-        "Cliquez sur le bouton ci-dessous pour en choisir un nouveau."
+        _("Hello,") + "<br><br>"
+        + _("You requested a password reset. Click the button below to choose a new password.")
     )
     after = (
         f"<p style='font-size:12px;color:{MUTED};margin:16px 0 0 0;'>"
-        "Si vous n'êtes pas à l'origine de cette demande, ignorez ce message&nbsp;: "
-        "votre mot de passe restera inchangé.</p>"
+        + _("If you did not request this, ignore this message; your password will remain unchanged.")
+        + "</p>"
     )
     html = _layout(
-        preheader="Réinitialisez le mot de passe de votre compte SAHA.",
-        heading="Réinitialisez votre mot de passe",
+        preheader=_("Reset the password for your SAHA account."),
+        heading=_("Reset your password"),
         intro_html=intro,
-        button_label="Choisir un nouveau mot de passe",
+        button_label=_("Choose a new password"),
         button_url=reset_url,
         after_html=after,
     )

@@ -10,6 +10,7 @@ import FormField from "@/components/ui/FormField";
 import PasswordInput from "@/components/ui/PasswordInput";
 import LoadingState from "@/components/ui/LoadingState";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useTranslation } from "@/lib/i18n";
 
 function ResetPasswordInner() {
   const searchParams = useSearchParams();
@@ -20,19 +21,20 @@ function ResetPasswordInner() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!uid || !token) return setError("Lien invalide.");
+    if (!uid || !token) return setError(t("Lien invalide."));
     setError("");
     setLoading(true);
     try {
       await api.post("/auth/password-reset/confirm/", { uid, token, new_password: newPassword });
       setSuccess(true);
-      toast.success("Mot de passe réinitialisé.");
+      toast.success(t("Mot de passe réinitialisé."));
       setTimeout(() => router.push("/compte/connexion"), 2500);
     } catch {
-      setError("Erreur lors de la réinitialisation. Le lien est peut-être expiré.");
+      setError(t("Erreur lors de la réinitialisation. Le lien est peut-être expiré."));
     } finally {
       setLoading(false);
     }
@@ -41,16 +43,16 @@ function ResetPasswordInner() {
   if (!uid || !token) {
     return (
       <AuthCard
-        title="Lien invalide"
-        subtitle="Ce lien de réinitialisation est invalide ou a expiré."
+        title={t("Lien invalide")}
+        subtitle={t("Ce lien de réinitialisation est invalide ou a expiré.")}
         footer={
           <Link href="/compte/mot-de-passe-oublie" className="font-semibold text-brand-blue hover:underline">
-            Demander un nouveau lien
+            {t("Demander un nouveau lien")}
           </Link>
         }
       >
         <p className="rounded-lg bg-red-50 p-4 text-center text-sm text-red-700">
-          Veuillez relancer la procédure de réinitialisation.
+          {t("Veuillez relancer la procédure de réinitialisation.")}
         </p>
       </AuthCard>
     );
@@ -58,23 +60,23 @@ function ResetPasswordInner() {
 
   if (success) {
     return (
-      <AuthCard icon={<CheckCircle className="h-6 w-6" />} title="Mot de passe réinitialisé" subtitle="Redirection vers la connexion…">
+      <AuthCard icon={<CheckCircle className="h-6 w-6" />} title={t("Mot de passe réinitialisé")} subtitle={t("Redirection vers la connexion…")}>
         <p className="rounded-lg bg-green-50 p-4 text-center text-sm text-green-700">
-          Votre mot de passe a été mis à jour avec succès.
+          {t("Votre mot de passe a été mis à jour avec succès.")}
         </p>
       </AuthCard>
     );
   }
 
   return (
-    <AuthCard icon={<KeyRound className="h-6 w-6" />} title="Nouveau mot de passe" subtitle="Choisissez un nouveau mot de passe pour votre compte.">
+    <AuthCard icon={<KeyRound className="h-6 w-6" />} title={t("Nouveau mot de passe")} subtitle={t("Choisissez un nouveau mot de passe pour votre compte.")}>
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {error && <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        <FormField label="Nouveau mot de passe" htmlFor="new_password" required hint="Au moins 8 caractères.">
+        <FormField label={t("Nouveau mot de passe")} htmlFor="new_password" required hint={t("Au moins 8 caractères.")}>
           <PasswordInput id="new_password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={8} />
         </FormField>
         <button type="submit" disabled={loading} className="btn-primary w-full">
-          {loading ? <LoadingSpinner className="h-5 w-5" /> : "Réinitialiser"}
+          {loading ? <LoadingSpinner className="h-5 w-5" /> : t("Réinitialiser")}
         </button>
       </form>
     </AuthCard>

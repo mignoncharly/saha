@@ -4,6 +4,7 @@ from apps.customers.serializers import CustomerSerializer
 from apps.services.serializers import ServiceTypeSerializer
 from apps.destinations.serializers import DestinationCitySerializer
 from apps.uploads.validators import validate_image_extension, validate_file_size
+from django.utils.translation import gettext as _
 
 class TransportRequestPhotoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,7 +52,7 @@ class TransportRequestCreateSerializer(serializers.ModelSerializer):
 
     def validate_quantity(self, value):
         if value < 1:
-            raise serializers.ValidationError('La quantité doit être au moins 1.')
+            raise serializers.ValidationError(_('Quantity must be at least 1.'))
         return value
 
     def create(self, validated_data):

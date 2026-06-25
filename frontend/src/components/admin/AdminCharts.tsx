@@ -3,11 +3,13 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { BarChart3, TrendingUp, PieChart as PieChartIcon, type LucideIcon } from 'lucide-react';
 import type { DashboardStats } from '@/types/api';
 import { statusLabel } from '@/components/ui/StatusBadge';
+import { useTranslation } from '@/lib/i18n';
 
 const COLORS = ['#0D47A1', '#00C49F', '#F9A825', '#FF8042', '#8884d8', '#ff6361', '#bc5090'];
 
 /** Placeholder shown inside a chart card while there is no data to plot. */
 function ChartEmpty({ height, icon: Icon, message }: { height: number; icon: LucideIcon; message: string }) {
+  const { t } = useTranslation();
   return (
     <div
       className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-gray-200 bg-gray-50/60 text-center text-gray-400"
@@ -15,20 +17,21 @@ function ChartEmpty({ height, icon: Icon, message }: { height: number; icon: Luc
     >
       <Icon className="h-9 w-9" />
       <p className="text-sm font-medium text-gray-500">{message}</p>
-      <p className="text-xs text-gray-400">Les données apparaîtront ici dès les premières demandes.</p>
+      <p className="text-xs text-gray-400">{t("Les données apparaîtront ici dès les premières demandes.")}</p>
     </div>
   );
 }
 
 export default function AdminCharts({ stats }: { stats: DashboardStats }) {
-  const statusData = stats.by_status.map(s => ({ name: statusLabel(s.status), count: s.count }));
+  const { t } = useTranslation();
+  const statusData = stats.by_status.map(s => ({ name: t(statusLabel(s.status)), count: s.count }));
   const overTime = stats.requests_over_time || [];
   const cityData = stats.by_pickup_city.map(c => ({ name: c.pickup_city, value: c.count }));
 
   return (
     <div className="grid md:grid-cols-2 gap-6 mb-6">
       <div className="card">
-        <h3 className="font-semibold mb-4">Demandes par statut</h3>
+        <h3 className="font-semibold mb-4">{t("Demandes par statut")}</h3>
         {statusData.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={statusData}>
@@ -40,11 +43,11 @@ export default function AdminCharts({ stats }: { stats: DashboardStats }) {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <ChartEmpty height={300} icon={BarChart3} message="Aucune demande pour le moment" />
+          <ChartEmpty height={300} icon={BarChart3} message={t("Aucune demande pour le moment")} />
         )}
       </div>
       <div className="card">
-        <h3 className="font-semibold mb-4">Évolution des demandes (30j)</h3>
+        <h3 className="font-semibold mb-4">{t("Évolution des demandes (30j)")}</h3>
         {overTime.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={overTime}>
@@ -56,11 +59,11 @@ export default function AdminCharts({ stats }: { stats: DashboardStats }) {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <ChartEmpty height={300} icon={TrendingUp} message="Pas encore d'activité sur 30 jours" />
+          <ChartEmpty height={300} icon={TrendingUp} message={t("Pas encore d'activité sur 30 jours")} />
         )}
       </div>
       <div className="card">
-        <h3 className="font-semibold mb-4">Par ville de ramassage</h3>
+        <h3 className="font-semibold mb-4">{t("Par ville de ramassage")}</h3>
         {cityData.length > 0 ? (
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
@@ -71,7 +74,7 @@ export default function AdminCharts({ stats }: { stats: DashboardStats }) {
             </PieChart>
           </ResponsiveContainer>
         ) : (
-          <ChartEmpty height={250} icon={PieChartIcon} message="Aucune ville de ramassage" />
+          <ChartEmpty height={250} icon={PieChartIcon} message={t("Aucune ville de ramassage")} />
         )}
       </div>
     </div>

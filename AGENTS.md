@@ -31,7 +31,8 @@ pricing and pickup/loading schedules, and receive notifications. Admins manage
 requests, prices, schedules, and notifications through an admin area.
 
 - Repo: `git@github.com:mignoncharly/saha.git`
-- Primary language of the UI: **French** (routes & user-facing strings are in French).
+- Supported UI languages: **French and German**. French is the source/default
+  language; all user-facing strings must use the existing i18n utilities.
 - Two deployments behind Nginx:
   - Frontend → `https://saha-stl.docufisc.de`
   - API → `https://api-saha.docufisc.de`
@@ -76,7 +77,8 @@ A typical app has: `models.py`, `serializers.py`, `views.py`, `urls.py`,
 - Served by `next start` on port 3030 in production.
 
 **Structure (`frontend/src/`)**:
-- `app/` — App Router pages. Public (French) routes: `page.tsx` (home),
+- `app/` — App Router pages. Public routes retain their French URL slugs but
+  render in French or German: `page.tsx` (home),
   `services/`, `tarifs/` (pricing), `suivi/` (tracking), `demande/` (request),
   `calendrier/` (schedule), `compte/` (account), `contact/`, `faq/`, `privacy/`.
   Admin area under `app/admin/`: `dashboard/`, `requests/` (+ `[id]/`),
@@ -118,7 +120,8 @@ Services live in `deploy/systemd/` and run as user `mignon`:
 - **Model/schema change:** edit `models.py`, then create a migration
   (`makemigrations`) in an isolated env and review it before it ever runs in prod.
 - **Frontend page/UI:** edit under `frontend/src/app/.../page.tsx` and
-  `frontend/src/components/`. Keep user-facing text **in French** to match.
+  `frontend/src/components/`. Add French source copy and a natural German entry
+  in `frontend/src/lib/i18n-config.ts`; never leave visible literals untranslated.
 - **Notifications / scheduled jobs:** `apps/notifications`, Celery tasks,
   `saha-worker`/`saha-beat`.
 - **Pricing / schedules logic:** `apps/pricing`, `apps/schedules`,
@@ -140,7 +143,8 @@ Services live in `deploy/systemd/` and run as user `mignon`:
 
 ## Conventions & gotchas
 
-- Routes and UI copy are **French** — match existing wording and tone.
+- Routes keep their French slugs. UI copy is bilingual (French/German); use the
+  frontend translation utilities and Django gettext catalogs consistently.
 - Public API vs admin API are deliberately separated (`views.py` vs
   `admin_views.py`, `urls.py` vs `admin_urls.py`). Don't expose admin logic on
   public routes.

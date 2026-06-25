@@ -54,12 +54,12 @@ export default function MobileNavDrawer({ open, onClose }: { open: boolean; onCl
   const rowClass = "flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium text-gray-700 hover:bg-gray-100";
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+    <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t("Menu")}>
       <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
       <div className="absolute right-0 top-0 flex h-full w-[88%] max-w-sm flex-col bg-white shadow-soft-lg animate-slide-in-right">
         <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4">
-          <span className="font-display text-lg font-bold text-brand-blue">Menu</span>
-          <button onClick={onClose} aria-label="Fermer le menu" className="rounded-md p-2 text-gray-600 hover:bg-gray-100">
+          <span className="font-display text-lg font-bold text-brand-blue">{t("Menu")}</span>
+          <button onClick={onClose} aria-label={t("Fermer le menu")} className="rounded-md p-2 text-gray-600 hover:bg-gray-100">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -106,7 +106,7 @@ export default function MobileNavDrawer({ open, onClose }: { open: boolean; onCl
                 <Truck className="h-5 w-5" /> {t("account.myRequests")}
               </Link>
               <Link href="/compte/notifications" onClick={onClose} className={rowClass}>
-                <Bell className="h-5 w-5" /> Notifications
+                <Bell className="h-5 w-5" /> {t("Notifications")}
                 {unread > 0 && <span className="ml-auto badge bg-brand-red text-white">{unread}</span>}
               </Link>
             </div>

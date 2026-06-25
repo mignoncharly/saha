@@ -8,15 +8,10 @@ import LoadingState from "@/components/ui/LoadingState";
 import ErrorState from "@/components/ui/ErrorState";
 import AdminCharts from "@/components/admin/AdminCharts";
 import { ClipboardList, Sparkles, CheckCircle, Plus, CalendarPlus, Bell, ArrowRight } from "lucide-react";
-
-const quickLinks = [
-  { href: "/admin/requests", label: "Voir les demandes", icon: ClipboardList },
-  { href: "/admin/prices", label: "Ajouter un tarif", icon: Plus },
-  { href: "/admin/schedules", label: "Ajouter une tournée", icon: CalendarPlus },
-  { href: "/admin/notifications", label: "Envoyer une notification", icon: Bell },
-];
+import { useTranslation } from "@/lib/i18n";
 
 export default function AdminDashboardPage() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -31,18 +26,24 @@ export default function AdminDashboardPage() {
 
   const cards = stats
     ? [
-        { label: "Total demandes", value: stats.total_requests, icon: ClipboardList, accent: "bg-blue-100 text-blue-700" },
-        { label: "Nouvelles", value: stats.new_requests, icon: Sparkles, accent: "bg-amber-100 text-amber-700" },
-        { label: "Confirmées", value: stats.confirmed_requests, icon: CheckCircle, accent: "bg-green-100 text-green-700" },
+        { label: t("Total demandes"), value: stats.total_requests, icon: ClipboardList, accent: "bg-blue-100 text-blue-700" },
+        { label: t("Nouvelles"), value: stats.new_requests, icon: Sparkles, accent: "bg-amber-100 text-amber-700" },
+        { label: t("Confirmées"), value: stats.confirmed_requests, icon: CheckCircle, accent: "bg-green-100 text-green-700" },
       ]
     : [];
+  const quickLinks = [
+    { href: "/admin/requests", label: t("Voir les demandes"), icon: ClipboardList },
+    { href: "/admin/prices", label: t("Ajouter un tarif"), icon: Plus },
+    { href: "/admin/schedules", label: t("Ajouter une tournée"), icon: CalendarPlus },
+    { href: "/admin/notifications", label: t("Envoyer une notification"), icon: Bell },
+  ];
 
   return (
     <AdminLayout>
       {loading ? (
-        <LoadingState label="Chargement des statistiques…" />
+        <LoadingState label={t("Chargement des statistiques…")} />
       ) : failed || !stats ? (
-        <ErrorState message="Impossible de charger les statistiques." />
+        <ErrorState message={t("Impossible de charger les statistiques.")} />
       ) : (
         <div className="space-y-8">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -60,7 +61,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <div>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Actions rapides</h2>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">{t("Actions rapides")}</h2>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {quickLinks.map(({ href, label, icon: Icon }) => (
                 <Link

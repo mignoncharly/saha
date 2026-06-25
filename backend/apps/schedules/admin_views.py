@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from .models import PickupSchedule, PickupRegion
 from .serializers import PickupScheduleSerializer
 from apps.core.permissions import IsStaffOrAdmin
+from django.utils.translation import gettext as _
 
 class ExportPickupSchedulesCSVView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
@@ -28,7 +29,7 @@ class ImportPickupSchedulesView(APIView):
     def post(self, request):
         file = request.FILES.get('file')
         if not file:
-            return Response({'detail': 'Aucun fichier fourni'}, status=400)
+            return Response({'detail': _('No file provided.')}, status=400)
         try:
             data = file.read().decode('utf-8')
             reader = csv.DictReader(io.StringIO(data))
@@ -43,7 +44,10 @@ class ImportPickupSchedulesView(APIView):
                 active = row.get('active', '1').strip() in ('1', 'true', 'True')
                 if not region_name or not start_date:
                     continue
-                region, _ = PickupRegion.objects.get_or_create(name=region_name, defaults={'cities': cities})
+                region, region_created = PickupRegion.objects.get_or_create(
+                    name=region_name,
+                    defaults={'cities': cities},
+                )
                 schedule, created_flag = PickupSchedule.objects.update_or_create(
                     region=region,
                     start_date=start_date,
@@ -59,5 +63,5 @@ class ImportPickupSchedulesView(APIView):
                 else:
                     updated += 1
             return Response({'created': created, 'updated': updated})
-        except Exception as e:
-            return Response({'detail': str(e)}, status=400)
+        except (UnicodeDecodeError, csv.Error, ValueError):
+            return Response({'detail': _('Invalid CSV file.')}, status=400)

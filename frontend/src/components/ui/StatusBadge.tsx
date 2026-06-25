@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslation } from "@/lib/i18n";
+
 interface StatusMeta {
   label: string;
   className: string;
@@ -22,6 +26,7 @@ export function statusLabel(status: string): string {
 }
 
 export default function StatusBadge({ status, className = "" }: { status: string; className?: string }) {
+  const { t } = useTranslation();
   const meta = STATUS_MAP[status] ?? { label: status, className: "bg-gray-100 text-gray-700" };
-  return <span className={`badge ${meta.className} ${className}`}>{meta.label}</span>;
+  return <span className={`badge ${meta.className} ${className}`}>{t(meta.label)}</span>;
 }

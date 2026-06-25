@@ -1,6 +1,17 @@
 import { getAuthHeaders } from "./auth";
+import { LOCALE_COOKIE_KEY, LOCALE_STORAGE_KEY, normalizeLocale } from "./i18n-config";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+function getLanguageHeader(): string {
+  if (typeof window === "undefined") return "fr";
+  const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+  const cookie = document.cookie
+    .split("; ")
+    .find((item) => item.startsWith(`${LOCALE_COOKIE_KEY}=`))
+    ?.split("=")[1];
+  return normalizeLocale(cookie || stored || navigator.language);
+}
 
 export class ApiError extends Error {
   status: number;
@@ -37,6 +48,7 @@ export function parseApiError(err: unknown, fallback: string): string {
 
 async function request<T>(endpoint: string, options?: RequestInit, isFormData = false): Promise<T> {
   const headers: Record<string, string> = {
+    "Accept-Language": getLanguageHeader(),
     ...((options?.headers as Record<string, string>) || {}),
     ...getAuthHeaders(),
   };
@@ -61,7 +73,7 @@ async function request<T>(endpoint: string, options?: RequestInit, isFormData = 
 
 async function requestBlob(endpoint: string): Promise<Blob> {
   const res = await fetch(`${API_BASE}${endpoint}`, {
-    headers: { ...getAuthHeaders() },
+    headers: { "Accept-Language": getLanguageHeader(), ...getAuthHeaders() },
   });
   if (!res.ok) {
     const errorText = await res.text();
@@ -71,7 +83,7 @@ async function requestBlob(endpoint: string): Promise<Blob> {
 }
 
 export const api = {
-  get: <T>(endpoint: string) => request<T>(endpoint),
+  get: <T>(endpoint: string, options?: RequestInit) => request<T>(endpoint, options),
   post: <T>(endpoint: string, data: unknown) =>
     request<T>(endpoint, {
       method: "POST",

@@ -7,15 +7,17 @@ import PriceCard from "@/components/public/PriceCard";
 import EmptyState from "@/components/ui/EmptyState";
 import ErrorState from "@/components/ui/ErrorState";
 import WhatsAppCTA from "@/components/public/WhatsAppCTA";
+import { getServerTranslation } from "@/lib/i18n-server";
 
 // Render at request time so public data is always live and never baked at build time.
 export const dynamic = "force-dynamic";
 
 export default async function TarifsPage() {
+  const { t, locale } = getServerTranslation();
   let prices: PriceRule[] = [];
   let failed = false;
   try {
-    prices = await api.get<PriceRule[]>("/prices/");
+    prices = await api.get<PriceRule[]>("/prices/", { headers: { "Accept-Language": locale } });
   } catch {
     failed = true;
   }
@@ -23,7 +25,7 @@ export default async function TarifsPage() {
   // Group by service name, preserving first-seen order.
   const grouped: Record<string, PriceRule[]> = {};
   for (const p of prices) {
-    const name = p.service_name || "Autre";
+    const name = p.service_name || t("Autre");
     (grouped[name] ||= []).push(p);
   }
 
@@ -32,11 +34,11 @@ export default async function TarifsPage() {
       <PageHeader
         hero
         icon={<Tag className="h-8 w-8" />}
-        title="Tarifs indicatifs"
-        subtitle="Une idée claire des prix avant de nous contacter. Le prix final est confirmé après vérification de votre demande."
+        title={t("Tarifs indicatifs")}
+        subtitle={t("Une idée claire des prix avant de nous contacter. Le prix final est confirmé après vérification de votre demande.")}
         actions={
           <Link href="/demande" className="btn-primary !px-6 !py-3">
-            Obtenir une estimation
+            {t("Obtenir une estimation")}
           </Link>
         }
       />
@@ -45,18 +47,17 @@ export default async function TarifsPage() {
         <div className="mb-8 flex items-start gap-3 rounded-2xl border border-brand-gold/30 bg-brand-gold/5 p-5 text-sm text-gray-700">
           <Info className="mt-0.5 h-5 w-5 shrink-0 text-brand-gold" />
           <p>
-            Les prix affichés sont indicatifs. Le prix final est confirmé après vérification des
-            informations (volume, poids, destination).
+            {t("Les prix affichés sont indicatifs. Le prix final est confirmé après vérification de votre demande.")}
           </p>
         </div>
 
         {failed ? (
-          <ErrorState message="Impossible de charger les tarifs pour le moment." action={<WhatsAppCTA />} />
+          <ErrorState message={t("Impossible de charger les tarifs pour le moment.")} action={<WhatsAppCTA />} />
         ) : prices.length === 0 ? (
           <EmptyState
             icon={<Tag className="h-7 w-7" />}
-            title="Aucun tarif publié"
-            description="Contactez-nous pour obtenir un devis personnalisé pour votre envoi."
+            title={t("Aucun tarif publié")}
+            description={t("Contactez-nous pour obtenir un devis personnalisé pour votre envoi.")}
             action={<WhatsAppCTA />}
           />
         ) : (
@@ -76,7 +77,7 @@ export default async function TarifsPage() {
 
         <div className="mt-12 flex flex-wrap justify-center gap-3">
           <Link href="/demande" className="btn-primary">
-            Obtenir une estimation
+            {t("Obtenir une estimation")}
           </Link>
           <WhatsAppCTA />
         </div>

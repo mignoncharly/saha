@@ -1,9 +1,10 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 class PickupRegion(models.Model):
     name = models.CharField(max_length=200)
     country = models.CharField(max_length=100, default='Allemagne')
-    cities = models.TextField(help_text="Comma-separated list of cities")
+    cities = models.TextField(help_text=_("Comma-separated list of cities"))
     active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -12,7 +13,7 @@ class PickupRegion(models.Model):
 class PickupSchedule(models.Model):
     region = models.ForeignKey(PickupRegion, on_delete=models.CASCADE, related_name='schedules')
     title = models.CharField(max_length=255, blank=True)
-    cities = models.TextField(blank=True, help_text="Override cities for this schedule")
+    cities = models.TextField(blank=True, help_text=_("Override cities for this schedule"))
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
     notes = models.TextField(blank=True)
@@ -38,4 +39,4 @@ class LoadingDate(models.Model):
         ordering = ['date']
 
     def __str__(self):
-        return f"Loading {self.date}"
+        return _("Loading %(date)s") % {'date': self.date}

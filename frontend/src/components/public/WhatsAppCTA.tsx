@@ -15,7 +15,7 @@ interface Props {
 export default function WhatsAppCTA({ reference, pickup, destination, className = "", iconOnly = false }: Props) {
   const { t } = useTranslation();
   const url = reference
-    ? buildWhatsAppPrefill(reference, pickup || "", destination || "")
+    ? buildWhatsAppPrefill(reference, pickup || "", destination || "", t)
     : whatsappLink();
   const label = t("cta.whatsapp");
 

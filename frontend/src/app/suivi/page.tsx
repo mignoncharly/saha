@@ -14,11 +14,13 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import EmptyState from "@/components/ui/EmptyState";
 import { useAuth } from "@/hooks/useAuth";
 import { resolveRole } from "@/lib/navigation";
+import { useTranslation } from "@/lib/i18n";
 
 function SuiviInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
+  const { t, formatDate } = useTranslation();
   const role = resolveRole(user?.role);
   const initialRef = searchParams.get("ref") || "";
 
@@ -46,12 +48,12 @@ function SuiviInner() {
       const data = await api.get<TransportRequest>(`/transport-requests/${trimmed}/`);
       setRequest(data);
     } catch {
-      setError("Demande introuvable. Vérifiez le numéro de référence.");
+      setError(t("Demande introuvable. Vérifiez le numéro de référence."));
       setRequest(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (initialRef) doSearch(initialRef);
@@ -81,7 +83,7 @@ function SuiviInner() {
     router.push("/suivi");
   };
 
-  if (role === "admin") return <LoadingState fullPage label="Redirection…" />;
+  if (role === "admin") return <LoadingState fullPage label={t("Redirection…")} />;
 
   const statuses = ["all", ...Array.from(new Set(myRequests.map((r) => r.status)))];
   const filtered = statusFilter === "all" ? myRequests : myRequests.filter((r) => r.status === statusFilter);
@@ -94,11 +96,11 @@ function SuiviInner() {
       <PageHeader
         hero
         icon={<Truck className="h-8 w-8" />}
-        title="Suivi de demande"
+        title={t("Suivi de demande")}
         subtitle={
           role === "customer"
-            ? "Retrouvez vos demandes et suivez leur avancement."
-            : "Entrez votre numéro de référence pour suivre l'état de votre envoi."
+            ? t("Retrouvez vos demandes et suivez leur avancement.")
+            : t("Entrez votre numéro de référence pour suivre l'état de votre envoi.")
         }
       />
 
@@ -106,10 +108,10 @@ function SuiviInner() {
         {showDetail ? (
           <div>
             <button onClick={backToList} className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-blue hover:underline">
-              <ArrowLeft className="h-4 w-4" /> {role === "customer" ? "Mes demandes" : "Nouvelle recherche"}
+              <ArrowLeft className="h-4 w-4" /> {role === "customer" ? t("Mes demandes") : t("Nouvelle recherche")}
             </button>
 
-            {loading && <LoadingState label="Recherche en cours…" />}
+            {loading && <LoadingState label={t("Recherche en cours…")} />}
             {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">{error}</div>}
 
             {request && (
@@ -118,7 +120,7 @@ function SuiviInner() {
                   <div>
                     <h2 className="font-mono text-xl font-bold text-gray-900">{request.reference_code}</h2>
                     {request.customer?.full_name && (
-                      <p className="text-sm text-gray-500">Client : {request.customer.full_name}</p>
+                      <p className="text-sm text-gray-500">{t("Client : {name}", { name: request.customer.full_name })}</p>
                     )}
                   </div>
                   <StatusBadge status={request.status} />
@@ -127,7 +129,7 @@ function SuiviInner() {
                 <div className="grid gap-4 text-sm sm:grid-cols-2">
                   <div className="rounded-xl bg-brand-light p-4">
                     <p className="mb-1 flex items-center gap-1.5 font-semibold text-gray-700">
-                      <MapPin className="h-4 w-4 text-brand-gold" /> Ramassage
+                      <MapPin className="h-4 w-4 text-brand-gold" /> {t("Ramassage")}
                     </p>
                     <p className="text-gray-600">{request.pickup_city}</p>
                     <p className="text-gray-500">{request.pickup_address}</p>
@@ -139,7 +141,7 @@ function SuiviInner() {
                   </div>
                   <div className="rounded-xl bg-brand-light p-4">
                     <p className="mb-1 flex items-center gap-1.5 font-semibold text-gray-700">
-                      <Truck className="h-4 w-4 text-brand-gold" /> Destination
+                      <Truck className="h-4 w-4 text-brand-gold" /> {t("Destination")}
                     </p>
                     <p className="text-gray-600">{request.destination_city?.name || "—"}</p>
                     {request.service_type?.name && (
@@ -151,7 +153,7 @@ function SuiviInner() {
                 </div>
 
                 <div>
-                  <h3 className="mb-3 text-lg font-bold text-gray-900">État d&apos;avancement</h3>
+                  <h3 className="mb-3 text-lg font-bold text-gray-900">{t("État d'avancement")}</h3>
                   <StatusTimeline currentStatus={request.status} />
                 </div>
 
@@ -165,13 +167,13 @@ function SuiviInner() {
           // ---- Customer: list of own requests ----
           <div>
             {listLoading ? (
-              <LoadingState label="Chargement de vos demandes…" />
+              <LoadingState label={t("Chargement de vos demandes…")} />
             ) : myRequests.length === 0 ? (
               <EmptyState
                 icon={<Package className="h-7 w-7" />}
-                title="Aucune demande pour le moment"
-                description="Faites votre première demande de ramassage et suivez-la ici."
-                action={<Link href="/demande" className="btn-primary">Demander un ramassage</Link>}
+                title={t("Aucune demande pour le moment")}
+                description={t("Faites votre première demande de ramassage et suivez-la ici.")}
+                action={<Link href="/demande" className="btn-primary">{t("cta.request")}</Link>}
               />
             ) : (
               <>
@@ -185,7 +187,7 @@ function SuiviInner() {
                           statusFilter === s ? "bg-brand-blue text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
-                        {s === "all" ? "Toutes" : statusLabel(s)}
+                        {s === "all" ? t("Toutes") : t(statusLabel(s))}
                       </button>
                     ))}
                   </div>
@@ -206,7 +208,7 @@ function SuiviInner() {
                         {r.destination_name ? ` → ${r.destination_name}` : ""}
                       </p>
                       <p className="mt-0.5 text-xs text-gray-400">
-                        {new Date(r.created_at).toLocaleDateString("fr-FR")}
+                        {formatDate(r.created_at)}
                       </p>
                     </Link>
                   ))}
@@ -222,16 +224,16 @@ function SuiviInner() {
                 type="text"
                 value={ref}
                 onChange={(e) => setRef(e.target.value.toUpperCase())}
-                placeholder="Ex: STL-2026-000123"
-                aria-label="Numéro de référence"
+                placeholder={t("Ex: STL-2026-000123")}
+                aria-label={t("Numéro de référence")}
                 className="input flex-1"
               />
-              <button type="submit" className="btn-primary !px-6" disabled={loading} aria-label="Rechercher">
+              <button type="submit" className="btn-primary !px-6" disabled={loading} aria-label={t("Rechercher")}>
                 {loading ? <LoadingSpinner className="h-5 w-5" /> : <Search className="h-5 w-5" />}
               </button>
             </form>
             <p className="mt-2 text-xs text-gray-400">
-              Le suivi public affiche une seule demande à la fois via son numéro de référence.
+              {t("Le suivi public affiche une seule demande à la fois via son numéro de référence.")}
             </p>
             {error && <div role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">{error}</div>}
           </div>

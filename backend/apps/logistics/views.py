@@ -20,6 +20,7 @@ from apps.notifications.tasks import send_status_change_notification
 from apps.core.throttles import PublicAnonRateThrottle
 from rest_framework.permissions import IsAuthenticated
 from .filters import TransportRequestFilter
+from django.utils.translation import gettext as _
 
 class PublicTransportRequestCreateView(generics.CreateAPIView):
     throttle_classes = [PublicAnonRateThrottle]
@@ -32,7 +33,7 @@ class PublicTransportRequestCreateView(generics.CreateAPIView):
         consent = request.data.get('consent')
         if consent != 'true' and consent != True:
             return Response(
-                {'consent': ['Vous devez accepter d\'être contacté.']},
+                {'consent': [_('You must agree to be contacted.')]},
                 status=status.HTTP_400_BAD_REQUEST
             )
         # Extract customer data
@@ -42,25 +43,31 @@ class PublicTransportRequestCreateView(generics.CreateAPIView):
         email = request.data.get('email', '').strip()
 
         if not full_name:
-            return Response({'full_name': ['Ce champ est obligatoire.']}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'full_name': [_('This field is required.')]}, status=status.HTTP_400_BAD_REQUEST)
         if not phone:
-            return Response({'phone': ['Ce champ est obligatoire.']}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'phone': [_('This field is required.')]}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create or get customer
-        customer, _ = Customer.objects.get_or_create(
+        customer, created = Customer.objects.get_or_create(
             phone=phone,
             defaults={
                 'full_name': full_name,
                 'whatsapp_number': whatsapp_number,
                 'email': email,
-                'preferred_language': 'fr',
+                'preferred_language': request.LANGUAGE_CODE,
             }
         )
         # Update customer if needed
-        if customer.full_name != full_name or customer.email != email:
+        if not created and (
+            customer.full_name != full_name
+            or customer.email != email
+            or customer.whatsapp_number != whatsapp_number
+            or customer.preferred_language != request.LANGUAGE_CODE
+        ):
             customer.full_name = full_name
             customer.email = email
             customer.whatsapp_number = whatsapp_number
+            customer.preferred_language = request.LANGUAGE_CODE
             customer.save()
 
         # Now proceed with standard creation
@@ -116,7 +123,10 @@ class AdminTransportRequestStatusUpdateView(generics.UpdateAPIView):
         allowed = ALLOWED_STATUS_TRANSITIONS.get(instance.status, [])
         if new_status not in allowed:
             return Response(
-                {'detail': f'Transition from {instance.status} to {new_status} not allowed.'},
+                {'detail': _('Transition from %(current)s to %(new)s is not allowed.') % {
+                    'current': instance.status,
+                    'new': new_status,
+                }},
                 status=status.HTTP_400_BAD_REQUEST
             )
         instance.status = new_status
@@ -135,7 +145,10 @@ class AdminTransportRequestExportCSVView(APIView):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="requests.csv"'
         writer = csv.writer(response)
-        writer.writerow(['Reference', 'Client', 'Phone', 'Pickup City', 'Destination', 'Status', 'Created At'])
+        writer.writerow([
+            _('Reference'), _('Customer'), _('Phone'), _('Pickup city'),
+            _('Destination'), _('Status'), _('Created at'),
+        ])
         qs = TransportRequest.objects.select_related('customer', 'destination_city').all()
         for req in qs:
             writer.writerow([

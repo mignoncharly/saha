@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -23,6 +24,7 @@ export class PushUnsupportedError extends Error {
 }
 
 export function usePushNotifications() {
+  const { locale } = useTranslation();
   const [permission, setPermission] = useState<NotificationPermission | "prompt">("prompt");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [supported, setSupported] = useState(true);
@@ -84,10 +86,10 @@ export function usePushNotifications() {
       p256dh,
       auth,
       region: "",
-      language: "fr",
+      language: locale,
     });
     setIsSubscribed(true);
-  }, []);
+  }, [locale]);
 
   return { permission, subscribe, isSubscribed, supported };
 }

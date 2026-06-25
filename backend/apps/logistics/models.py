@@ -2,19 +2,20 @@ from django.db import models
 from apps.customers.models import Customer
 from apps.services.models import ServiceType
 from apps.destinations.models import DestinationCity
+from django.utils.translation import gettext_lazy as _
 
 class TransportRequest(models.Model):
     STATUS_CHOICES = [
-        ('new', 'Nouveau'),
-        ('contacted', 'Contacté'),
-        ('confirmed', 'Confirmé'),
-        ('pickup_scheduled', 'Ramassage planifié'),
-        ('received', 'Reçu'),
-        ('loaded', 'Chargé'),
-        ('in_transit', 'En route'),
-        ('arrived_cameroon', 'Arrivé au Cameroun'),
-        ('delivered', 'Livré'),
-        ('cancelled', 'Annulé'),
+        ('new', _('New')),
+        ('contacted', _('Contacted')),
+        ('confirmed', _('Confirmed')),
+        ('pickup_scheduled', _('Pickup scheduled')),
+        ('received', _('Received')),
+        ('loaded', _('Loaded')),
+        ('in_transit', _('In transit')),
+        ('arrived_cameroon', _('Arrived in Cameroon')),
+        ('delivered', _('Delivered')),
+        ('cancelled', _('Cancelled')),
     ]
     reference_code = models.CharField(max_length=50, unique=True, db_index=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='requests')
@@ -47,4 +48,7 @@ class TransportRequestPhoto(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Photo {self.id} for {self.request.reference_code}"
+        return _("Photo %(photo_id)s for %(reference)s") % {
+            'photo_id': self.id,
+            'reference': self.request.reference_code,
+        }

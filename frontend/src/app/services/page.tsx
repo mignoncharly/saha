@@ -1,22 +1,13 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
 import type { ServiceType } from "@/types/api";
-import { Package, Drum, Car, HelpCircle, Boxes, Info } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { Package, Info } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import ServiceCard from "@/components/public/ServiceCard";
 import EmptyState from "@/components/ui/EmptyState";
 import ErrorState from "@/components/ui/ErrorState";
 import WhatsAppCTA from "@/components/public/WhatsAppCTA";
 import { getServerTranslation } from "@/lib/i18n-server";
-
-const iconMap: Record<string, LucideIcon> = {
-  package: Package,
-  barrel: Drum,
-  cube: Boxes,
-  car: Car,
-  "help-circle": HelpCircle,
-};
 
 // Render at request time so public data is always live and never baked at build time.
 export const dynamic = "force-dynamic";
@@ -63,7 +54,7 @@ export default async function ServicesPage() {
                   key={s.id}
                   name={s.name}
                   description={s.description}
-                  icon={iconMap[s.icon] || HelpCircle}
+                  icon={s.icon}
                   href="/demande"
                 />
               ))}

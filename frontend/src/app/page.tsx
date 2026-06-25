@@ -1,16 +1,11 @@
 import Link from "next/link";
 import {
-  Package,
-  Drum,
-  Car,
-  HelpCircle,
   Boxes,
   Truck,
   MapPin,
   BellRing,
   ArrowRight,
   CalendarCheck,
-  type LucideIcon,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import type { ServiceType, PriceRule, PickupSchedule, LoadingDate } from "@/types/api";
@@ -24,14 +19,6 @@ import WhatsAppCTA from "@/components/public/WhatsAppCTA";
 import Section, { SectionHeading } from "@/components/ui/Section";
 import EmptyState from "@/components/ui/EmptyState";
 import { getServerTranslation } from "@/lib/i18n-server";
-
-const iconMap: Record<string, LucideIcon> = {
-  package: Package,
-  barrel: Drum,
-  cube: Boxes,
-  car: Car,
-  "help-circle": HelpCircle,
-};
 
 // Render at request time so public data is always live and never baked at build time.
 export const dynamic = "force-dynamic";
@@ -88,7 +75,7 @@ export default async function Home() {
           <SectionHeading eyebrow={t("Nos services")} title={t("Ce que nous transportons")} description={t("Du colis au véhicule chargé, nous acheminons vos biens en toute sécurité.")} />
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {services.slice(0, 4).map((s) => (
-              <ServiceCard key={s.id} name={s.name} description={s.description} icon={iconMap[s.icon] || HelpCircle} href="/demande" />
+              <ServiceCard key={s.id} name={s.name} description={s.description} icon={s.icon} href="/demande" />
             ))}
           </div>
           <div className="mt-10 text-center">

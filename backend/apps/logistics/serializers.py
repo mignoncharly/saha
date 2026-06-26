@@ -84,8 +84,11 @@ class TransportRequestCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        from .reference import create_transport_request_with_reference
         photos_data = validated_data.pop('photos', [])
-        request_obj = TransportRequest.objects.create(**validated_data)
+        # Reference code is assigned here (with collision retry), not in the view,
+        # so the read-of-latest and the INSERT happen together.
+        request_obj = create_transport_request_with_reference(**validated_data)
         for photo in photos_data:
             TransportRequestPhoto.objects.create(request=request_obj, image=photo)
         return request_obj

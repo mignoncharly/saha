@@ -1,4 +1,5 @@
 import io
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
@@ -10,6 +11,7 @@ from rest_framework.test import APITestCase
 from apps.customers.models import Customer
 from apps.destinations.models import DestinationCity
 from apps.logistics.models import TransportRequest, TransportRequestPhoto
+from apps.logistics.reference import create_transport_request_with_reference
 from apps.services.models import ServiceType
 
 User = get_user_model()
@@ -148,6 +150,39 @@ class PublicTrackingPrivacyTests(APITestCase):
             "42 rue Privée", "ne pas rappeler", "150.00", "175.50",
         ):
             self.assertNotIn(secret, body)
+
+
+class ReferenceCodeTests(APITestCase):
+    def setUp(self):
+        self.customer = Customer.objects.create(full_name="C", phone="+33600000099")
+
+    def test_codes_are_sequential(self):
+        r1 = create_transport_request_with_reference(
+            customer=self.customer, pickup_city="A", pickup_address="x"
+        )
+        r2 = create_transport_request_with_reference(
+            customer=self.customer, pickup_city="B", pickup_address="y"
+        )
+        self.assertTrue(r1.reference_code.endswith("-000001"))
+        n1 = int(r1.reference_code.split("-")[-1])
+        n2 = int(r2.reference_code.split("-")[-1])
+        self.assertEqual(n2, n1 + 1)
+
+    @patch("apps.logistics.reference._peek_next_reference_code")
+    def test_retries_on_reference_collision(self, mock_peek):
+        # Simulate a concurrent submission having already taken the first number:
+        # the first peek collides (IntegrityError) and the helper retries.
+        taken = "STL-2026-000001"
+        TransportRequest.objects.create(
+            reference_code=taken, customer=self.customer, pickup_city="A", pickup_address="x"
+        )
+        fresh = "STL-2026-000002"
+        mock_peek.side_effect = [taken, fresh]
+        obj = create_transport_request_with_reference(
+            customer=self.customer, pickup_city="B", pickup_address="y"
+        )
+        self.assertEqual(obj.reference_code, fresh)
+        self.assertEqual(mock_peek.call_count, 2)
 
 
 class StatusTransitionTests(APITestCase):

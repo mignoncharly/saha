@@ -8,7 +8,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { Plus, Edit2, Trash2, Check, X, Tag } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
-const EMPTY_NEW: Partial<PriceRule> = { label: "", price_amount: "0", currency: "EUR", unit: "", service_type: undefined };
+const EMPTY_NEW: Partial<PriceRule> = { label: "", price_amount: "0", currency: "EUR", unit: "", service_type: undefined, active: true, valid_from: null, valid_until: null };
 
 export default function AdminPriceEditor() {
   const { t } = useTranslation();
@@ -101,6 +101,20 @@ export default function AdminPriceEditor() {
               ))}
             </select>
           </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="flex flex-col text-xs font-medium text-gray-600">
+              {t("Valide à partir du")}
+              <input type="date" value={newForm.valid_from ?? ""} onChange={(e) => setNewForm({ ...newForm, valid_from: e.target.value || null })} className="input !py-1.5" />
+            </label>
+            <label className="flex flex-col text-xs font-medium text-gray-600">
+              {t("Valide jusqu'au")}
+              <input type="date" value={newForm.valid_until ?? ""} onChange={(e) => setNewForm({ ...newForm, valid_until: e.target.value || null })} className="input !py-1.5" />
+            </label>
+            <label className="flex items-center gap-2 self-end pb-1.5 text-sm text-gray-700">
+              <input type="checkbox" checked={newForm.active !== false} onChange={(e) => setNewForm({ ...newForm, active: e.target.checked })} className="h-4 w-4" />
+              {t("Actif")}
+            </label>
+          </div>
           <div className="flex gap-2">
             <button onClick={addPrice} className="btn-primary !px-3 !py-2 text-sm"><Check className="h-4 w-4" /> {t("Valider")}</button>
             <button onClick={() => { setAdding(false); setNewForm(EMPTY_NEW); }} className="btn-ghost !px-3 !py-2 text-sm"><X className="h-4 w-4" /> {t("Annuler")}</button>
@@ -138,7 +152,16 @@ export default function AdminPriceEditor() {
                       <td className="px-4 py-2"><input value={editForm.label} onChange={(e) => setEditForm({ ...editForm, label: e.target.value })} className="input !py-1.5" /></td>
                       <td className="px-4 py-2"><input type="number" step="0.01" value={editForm.price_amount} onChange={(e) => setEditForm({ ...editForm, price_amount: e.target.value })} className="input !w-24 !py-1.5" /></td>
                       <td className="px-4 py-2"><input value={editForm.unit} onChange={(e) => setEditForm({ ...editForm, unit: e.target.value })} className="input !w-20 !py-1.5" /></td>
-                      <td className="px-4 py-2"><input type="checkbox" checked={editForm.active !== false} onChange={(e) => setEditForm({ ...editForm, active: e.target.checked })} className="h-4 w-4" /></td>
+                      <td className="px-4 py-2">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="flex items-center gap-1.5 text-xs text-gray-700">
+                            <input type="checkbox" checked={editForm.active !== false} onChange={(e) => setEditForm({ ...editForm, active: e.target.checked })} className="h-4 w-4" />
+                            {t("Actif")}
+                          </label>
+                          <input type="date" aria-label={t("Valide à partir du")} value={editForm.valid_from ?? ""} onChange={(e) => setEditForm({ ...editForm, valid_from: e.target.value || null })} className="input !py-1 !text-xs" />
+                          <input type="date" aria-label={t("Valide jusqu'au")} value={editForm.valid_until ?? ""} onChange={(e) => setEditForm({ ...editForm, valid_until: e.target.value || null })} className="input !py-1 !text-xs" />
+                        </div>
+                      </td>
                       <td className="px-4 py-2">
                         <div className="flex gap-2">
                           <button onClick={saveEdit} aria-label={t("Valider")} className="text-green-600"><Check className="h-4 w-4" /></button>
@@ -154,8 +177,13 @@ export default function AdminPriceEditor() {
                       <td className="px-4 py-3">{price.unit}</td>
                       <td className="px-4 py-3">
                         <span className={`badge ${price.active !== false ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
-                          {price.active !== false ? "Actif" : "Inactif"}
+                          {price.active !== false ? t("Actif") : t("Inactif")}
                         </span>
+                        {(price.valid_from || price.valid_until) && (
+                          <p className="mt-1 text-xs text-gray-400">
+                            {price.valid_from || "…"} → {price.valid_until || "…"}
+                          </p>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">

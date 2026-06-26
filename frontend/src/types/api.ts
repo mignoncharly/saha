@@ -15,6 +15,8 @@ export interface PriceRule {
   unit: string;
   description?: string;
   active?: boolean;
+  valid_from?: string | null;
+  valid_until?: string | null;
 }
 
 export interface PickupSchedule {

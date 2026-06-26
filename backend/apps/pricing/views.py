@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from .models import PriceRule
-from .serializers import PriceRuleSerializer
+from .serializers import PriceRuleSerializer, AdminPriceRuleSerializer
 from apps.core.permissions import IsStaffOrAdmin
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -10,19 +10,20 @@ from apps.core.i18n import translate_database_value
 
 
 class PriceRuleListView(generics.ListAPIView):
-    queryset = PriceRule.objects.filter(active=True).select_related('service_type')
+    # Public list: only active rules whose validity window covers today.
+    queryset = PriceRule.objects.current().select_related('service_type')
     serializer_class = PriceRuleSerializer
     permission_classes = []
 
-# Admin views
+# Admin views — use the admin serializer so active/validity persist.
 class AdminPriceRuleListCreateView(generics.ListCreateAPIView):
     queryset = PriceRule.objects.select_related('service_type').all()
-    serializer_class = PriceRuleSerializer
+    serializer_class = AdminPriceRuleSerializer
     permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
 
 class AdminPriceRuleDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = PriceRule.objects.all()
-    serializer_class = PriceRuleSerializer
+    serializer_class = AdminPriceRuleSerializer
     permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
 
 class PriceEstimateView(APIView):
@@ -37,9 +38,8 @@ class PriceEstimateView(APIView):
             return Response({'detail': _('Service type is required.')}, status=400)
 
         try:
-            price_rule = PriceRule.objects.filter(
+            price_rule = PriceRule.objects.current().filter(
                 service_type_id=service_type_id,
-                active=True
             ).order_by('price_amount').first()  # take cheapest matching
 
             if not price_rule:

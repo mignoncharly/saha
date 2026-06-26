@@ -7,6 +7,7 @@ from .status import ALLOWED_STATUS_TRANSITIONS
 from .admin_serializers import BulkStatusUpdateSerializer
 from apps.core.permissions import IsStaffOrAdmin
 from apps.notifications.tasks import send_status_change_notification
+from .retention import run_data_retention
 
 class BulkStatusUpdateView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
@@ -48,3 +49,30 @@ class AdminRequestCommentView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         is_internal = str(self.request.data.get('is_internal', '')).lower() in ('1', 'true', 'on')
         serializer.save(request=self._request_obj(), author=self.request.user, is_internal=is_internal)
+
+def _truthy(value):
+    return str(value).lower() in ('1', 'true', 'yes', 'on')
+
+
+class AdminDataRetentionView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
+
+    def post(self, request):
+        days = request.data.get('days')
+        if days in ('', None):
+            days = None
+        else:
+            try:
+                days = int(days)
+            except (TypeError, ValueError):
+                return Response({'days': ['Must be a positive integer.']}, status=status.HTTP_400_BAD_REQUEST)
+            if days <= 0:
+                return Response({'days': ['Must be a positive integer.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        result = run_data_retention(
+            days=days,
+            apply=_truthy(request.data.get('apply', False)),
+            anonymize_customers=_truthy(request.data.get('anonymize_customers', False)),
+            actor=request.user,
+        )
+        return Response(result)

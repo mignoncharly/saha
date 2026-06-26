@@ -14,10 +14,10 @@ push, and **update the matching row + "Last updated" here**.
 | 3 | Admin audit-log UI | ✅ DONE | `feat/phase-9-audit-ui` (pushed; 69/69, tsc clean, no migration) |
 | 4 | Payment status fields | ✅ DONE | `feat/phase-9-payment` (pushed; 68/68, tsc clean; **migration, see conflict note**) |
 | 5 | Request message thread | ✅ DONE | merged to main |
-| 6 | CSV import preview | ⬜ TODO | no migration |
-| 7 | Ops dashboard (failed notifs/emails) | ⬜ TODO | migration only if EmailLog |
-| 8 | Data-retention workflow | ⬜ TODO | restarts worker/beat |
-| 9 | Filter-aware CSV export | ⬜ TODO | no migration |
+| 6 | CSV import preview | ✅ DONE | `feat/phase-9-csv-import-preview` (pushed; 84/84, tsc clean, no migration) |
+| 7 | Ops dashboard (failed notifs/emails) | ✅ DONE | `feat/phase-9-ops-dashboard` (pushed; 84/84, tsc clean, no migration) |
+| 8 | Data-retention workflow | ✅ DONE | `feat/phase-9-data-retention` (pushed; 87/87, tsc clean, no migration; restarts api/worker/beat) |
+| 9 | Filter-aware CSV export | ✅ DONE | `feat/phase-9-filter-aware-export` (pushed; 84/84, tsc clean, no migration) |
 | 10 | Admin service catalog editor | ✅ DONE (Phase 3) | — |
 
 Legend: ⬜ TODO · 🟡 in progress · ✅ done.
@@ -29,31 +29,28 @@ Legend: ⬜ TODO · 🟡 in progress · ✅ done.
 
 ## Resume notes
 
-Items 1 and 2 are complete (branches pushed, **not yet merged** to `main`):
-- **Item 1** `feat/phase-9-customer-detail` — owner detail endpoint
-  `my-requests/<ref>/` + `/suivi` shows full detail for logged-in customers.
-- **Item 2** `feat/phase-9-status-history` — `RequestStatusEvent` model
-  (**migration 0004**), events written on admin status change (single + bulk),
-  owner history endpoint `my-requests/<ref>/history/`, admin detail includes
-  `status_events`, admin UI history card.
+Items 1-9 are complete. Items 6, 7, 8, and 9 are independent admin/ops
+branches. Item 9 adds no migration.
 
-**Merge order when ready:** item 1, then item 2 (item 2 is off `main` and adds a
-migration). Both touch `logistics/serializers.py`/`views.py`/`urls.py` and
-`types/request.ts` — expect small, easily-resolved overlaps. Item 2's deploy
-needs `migrate` + `saha-api` restart. (These two docs already live on `main`.)
+- **Item 6** `feat/phase-9-csv-import-preview` — pickup schedule CSV imports now
+  preview create/update/error rows with `?dry_run=1` before applying.
+- **Item 7** `feat/phase-9-ops-dashboard` — admin dashboard surfaces push
+  notification failures, recent failed notification logs, and inactive push
+  subscriptions. Email failures remain server-log-only; no `EmailLog` model was
+  added.
+- **Item 8** `feat/phase-9-data-retention` — data retention service, daily
+  Celery beat task, management command, and admin dry-run/apply endpoint. The
+  scheduled default purges old terminal-request photos after
+  `DATA_RETENTION_DAYS`; customer PII anonymization is opt-in via
+  `DATA_RETENTION_ANONYMIZE_CUSTOMERS` or explicit trigger. Deploy requires
+  restarting `saha-api`, `saha-worker`, and `saha-beat` after pull.
+- **Item 9** `feat/phase-9-filter-aware-export` — admin request CSV export now
+  uses the same status/search/filter query params as the request list, and the
+  frontend export button passes the active filters.
 
-**Next: item 5 — Request message thread** (per `phase-9-plan.md`; needs a
-migration: new RequestComment model). Branch off `main`.
-
-**⚠️ Migration numbering conflict:** items 2 and 4 each add a `0004_*` migration
-off `main`. When merging, keep one and renumber the other (or `makemigrations
---merge`). Any further model-adding item should re-check the latest migration
-number after the earlier ones merge.
-
-Possible follow-up: wire the item-2 owner history endpoint into the item-1
-customer detail page (a timeline on `/suivi`) — currently only the admin UI shows
-the history.
+No Phase 9 TODO items remain except optional follow-ups outside this plan. Django
+5.2 production deploy remains deferred for a maintenance window.
 
 ---
 
-_Last updated: 2026-06-26 — items 1, 2, 3, 4 DONE; next item 5._
+_Last updated: 2026-06-26 — item 9 DONE; Phase 9 TODO list complete._

@@ -1,7 +1,8 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from .models import TransportRequest
-from .serializers import TransportRequestDetailSerializer
+from django.shortcuts import get_object_or_404
+from .models import TransportRequest, RequestComment
+from .serializers import TransportRequestDetailSerializer, RequestCommentSerializer
 from .status import ALLOWED_STATUS_TRANSITIONS
 from .admin_serializers import BulkStatusUpdateSerializer
 from apps.core.permissions import IsStaffOrAdmin
@@ -26,3 +27,19 @@ class BulkStatusUpdateView(generics.GenericAPIView):
                 updated += 1
                 send_status_change_notification.delay(req.id)
         return Response({'updated': updated, 'total': len(ids)})
+
+
+class AdminRequestCommentView(generics.ListCreateAPIView):
+    # Admin thread: sees and posts all comments (internal + customer-visible).
+    serializer_class = RequestCommentSerializer
+    permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
+
+    def _request_obj(self):
+        return get_object_or_404(TransportRequest, pk=self.kwargs['pk'])
+
+    def get_queryset(self):
+        return self._request_obj().comments.select_related('author')
+
+    def perform_create(self, serializer):
+        is_internal = str(self.request.data.get('is_internal', '')).lower() in ('1', 'true', 'on')
+        serializer.save(request=self._request_obj(), author=self.request.user, is_internal=is_internal)

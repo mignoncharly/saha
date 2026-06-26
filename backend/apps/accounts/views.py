@@ -9,10 +9,17 @@ from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.translation import gettext as _
 from .serializers import AuthTokenSerializer, UserSerializer, RegisterSerializer
 from .models import User
-from apps.core.throttles import AuthRateThrottle
+from apps.core.throttles import (
+    AuthRateThrottle,
+    PasswordResetThrottle,
+    EmailVerificationThrottle,
+    ResendVerificationThrottle,
+)
 from apps.notifications.tasks import send_password_reset_email, send_verification_email
 
 UserModel = get_user_model()
@@ -53,6 +60,7 @@ class RegisterView(generics.CreateAPIView):
 
 class VerifyEmailView(APIView):
     permission_classes = []
+    throttle_classes = [EmailVerificationThrottle]
     def get(self, request):
         token = request.query_params.get('token')
         if not token:
@@ -73,6 +81,7 @@ class VerifyEmailView(APIView):
 
 class ResendVerificationView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [ResendVerificationThrottle]
     def post(self, request):
         user = request.user
         if user.email_verified:
@@ -87,14 +96,19 @@ class ResendVerificationView(APIView):
 
 class PasswordResetView(APIView):
     permission_classes = []
+    throttle_classes = [PasswordResetThrottle]
     def post(self, request):
         email = request.data.get('email')
         if not email:
             return Response({'detail': _('Email address is required.')}, status=400)
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             return Response({'detail': _('If this email address exists, a password reset link has been sent.')})
+        except User.MultipleObjectsReturned:
+            # Defensive: legacy data with case-variant duplicates. Pick the first
+            # and still return the generic response.
+            user = User.objects.filter(email__iexact=email).order_by('pk').first()
         token_generator = PasswordResetTokenGenerator()
         token = token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -106,6 +120,7 @@ class PasswordResetView(APIView):
 
 class PasswordResetConfirmView(APIView):
     permission_classes = []
+    throttle_classes = [PasswordResetThrottle]
     def post(self, request):
         uid = request.data.get('uid')
         token = request.data.get('token')
@@ -120,6 +135,13 @@ class PasswordResetConfirmView(APIView):
         token_generator = PasswordResetTokenGenerator()
         if not token_generator.check_token(user, token):
             return Response({'detail': _('Invalid or expired link.')}, status=400)
+        # Enforce Django's password validators (length, common, numeric, similarity).
+        try:
+            validate_password(new_password, user)
+        except DjangoValidationError as exc:
+            return Response({'new_password': list(exc.messages)}, status=400)
         user.set_password(new_password)
         user.save()
+        # Invalidate any existing auth token so a reset logs out other sessions.
+        Token.objects.filter(user=user).delete()
         return Response({'detail': _('Password reset successfully.')})

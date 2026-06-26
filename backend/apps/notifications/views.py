@@ -12,6 +12,7 @@ from .serializers import (
 )
 from .tasks import send_broadcast_notification
 from apps.core.permissions import IsStaffOrAdmin
+from apps.core.throttles import PushSubscriptionThrottle
 from django.utils.translation import gettext as _
 
 
@@ -23,6 +24,7 @@ def _customer_of(request):
 class PushSubscriptionCreateView(generics.CreateAPIView):
     serializer_class = PushSubscriptionSerializer
     permission_classes = []
+    throttle_classes = [PushSubscriptionThrottle]
 
     def perform_create(self, serializer):
         # Link the subscription to the authenticated customer so that

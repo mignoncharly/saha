@@ -143,8 +143,8 @@ class AdminTransportRequestStatusUpdateView(generics.UpdateAPIView):
         return Response(TransportRequestDetailSerializer(instance).data)
     
 
-class AdminTransportRequestExportCSVView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
+class AdminTransportRequestExportCSVView(AdminTransportRequestListView):
+    pagination_class = None
 
     def get(self, request, *args, **kwargs):
         response = HttpResponse(content_type='text/csv')
@@ -154,7 +154,7 @@ class AdminTransportRequestExportCSVView(APIView):
             _('Reference'), _('Customer'), _('Phone'), _('Pickup city'),
             _('Destination'), _('Status'), _('Created at'),
         ])
-        qs = TransportRequest.objects.select_related('customer', 'destination_city').all()
+        qs = self.filter_queryset(self.get_queryset())
         for req in qs:
             writer.writerow([
                 req.reference_code,

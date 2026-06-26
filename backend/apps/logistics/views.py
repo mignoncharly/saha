@@ -9,7 +9,6 @@ from .serializers import (
     TransportRequestStatusSerializer,
     PublicTransportRequestTrackingSerializer,
 )
-from .reference import generate_reference_code
 from .status import ALLOWED_STATUS_TRANSITIONS
 from apps.customers.models import Customer
 from apps.core.permissions import IsStaffOrAdmin
@@ -71,11 +70,13 @@ class PublicTransportRequestCreateView(generics.CreateAPIView):
             customer.preferred_language = request.LANGUAGE_CODE
             customer.save()
 
-        # Now proceed with standard creation
+        # Now proceed with standard creation. The reference code is assigned
+        # (race-safe, with retry) inside the serializer's create(), so we read it
+        # back off the saved instance for the response.
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        ref = generate_reference_code()
-        self.perform_create(serializer, customer=customer, reference_code=ref)
+        self.perform_create(serializer, customer=customer)
+        ref = serializer.instance.reference_code
         headers = self.get_success_headers(serializer.data)
         return Response(
             {**serializer.data, 'reference_code': ref},
@@ -83,10 +84,10 @@ class PublicTransportRequestCreateView(generics.CreateAPIView):
             headers=headers
         )
 
-    def perform_create(self, serializer, customer=None, reference_code=None):
-        # Photos are persisted by the serializer's `create()` from validated data,
-        # so we only need to attach the customer and the generated reference code here.
-        return serializer.save(customer=customer, reference_code=reference_code)
+    def perform_create(self, serializer, customer=None):
+        # Photos and the reference code are persisted by the serializer's
+        # create(); we only need to attach the customer here.
+        return serializer.save(customer=customer)
 
 class PublicTransportRequestDetailView(generics.RetrieveAPIView):
     # Anonymous tracking by reference code. Uses the minimal privacy-safe

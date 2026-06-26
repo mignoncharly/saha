@@ -35,6 +35,17 @@ const BULK_OPTIONS = [
   { value: "cancelled", label: "Annuler" },
 ];
 
+function buildFilterParams(filters: Filters) {
+  const params = new URLSearchParams();
+  if (filters.status.length > 0) filters.status.forEach((s) => params.append("status", s));
+  if (filters.pickup_city) params.set("pickup_city", filters.pickup_city);
+  if (filters.service_type) params.set("service_type", filters.service_type);
+  if (filters.date_from) params.set("created_at_gte", filters.date_from);
+  if (filters.date_to) params.set("created_at_lte", filters.date_to);
+  if (filters.search) params.set("search", filters.search);
+  return params;
+}
+
 export default function AdminRequestTable({ filters }: Props) {
   const { t, formatDate } = useTranslation();
   const [requests, setRequests] = useState<TransportRequestListItem[]>([]);
@@ -46,13 +57,7 @@ export default function AdminRequestTable({ filters }: Props) {
   const pageSize = 15;
 
   const fetchRequests = useCallback(() => {
-    const params = new URLSearchParams();
-    if (filters.status.length > 0) filters.status.forEach((s) => params.append("status", s));
-    if (filters.pickup_city) params.set("pickup_city", filters.pickup_city);
-    if (filters.service_type) params.set("service_type", filters.service_type);
-    if (filters.date_from) params.set("created_at_gte", filters.date_from);
-    if (filters.date_to) params.set("created_at_lte", filters.date_to);
-    if (filters.search) params.set("search", filters.search);
+    const params = buildFilterParams(filters);
     params.set("page", String(page));
     params.set("page_size", String(pageSize));
 
@@ -75,11 +80,10 @@ export default function AdminRequestTable({ filters }: Props) {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   const handleExportCSV = async () => {
-    const params = new URLSearchParams();
-    if (filters.status.length > 0) filters.status.forEach((s) => params.append("status", s));
-    if (filters.search) params.set("search", filters.search);
+    const params = buildFilterParams(filters);
+    const query = params.toString();
     try {
-      await downloadFile(`/admin/requests/export/csv/?${params.toString()}`, "demandes.csv");
+      await downloadFile(`/admin/requests/export/csv/${query ? `?${query}` : ""}`, "demandes.csv");
     } catch {
       toast.error(t("Erreur lors de l'export CSV."));
     }

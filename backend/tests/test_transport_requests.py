@@ -241,3 +241,47 @@ class CustomerRequestListTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["reference_code"], "STL-2026-000010")
+
+
+class AdminRequestExportTests(APITestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            email="admin@example.com", password="StrongPass123!", role="admin"
+        )
+        self.client.force_authenticate(self.admin)
+        self.customer_a = Customer.objects.create(full_name="Alice Export", phone="+33610000001")
+        self.customer_b = Customer.objects.create(full_name="Bob Export", phone="+33610000002")
+        TransportRequest.objects.create(
+            reference_code="STL-2026-000901",
+            customer=self.customer_a,
+            pickup_city="Paris",
+            pickup_address="1 rue A",
+            status="new",
+        )
+        TransportRequest.objects.create(
+            reference_code="STL-2026-000902",
+            customer=self.customer_b,
+            pickup_city="Lyon",
+            pickup_address="2 rue B",
+            status="confirmed",
+        )
+
+    def _export_text(self, query=""):
+        url = reverse("admin-request-export-csv")
+        if query:
+            url = f"{url}?{query}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200, response.content)
+        return response.content.decode()
+
+    def test_export_honors_status_filter(self):
+        body = self._export_text("status=confirmed")
+
+        self.assertIn("STL-2026-000902", body)
+        self.assertNotIn("STL-2026-000901", body)
+
+    def test_export_honors_search_filter(self):
+        body = self._export_text("search=Alice")
+
+        self.assertIn("STL-2026-000901", body)
+        self.assertNotIn("STL-2026-000902", body)

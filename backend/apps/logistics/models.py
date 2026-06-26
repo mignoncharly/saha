@@ -17,6 +17,12 @@ class TransportRequest(models.Model):
         ('delivered', _('Delivered')),
         ('cancelled', _('Cancelled')),
     ]
+    PAYMENT_STATUS_CHOICES = [
+        ('unpaid', _('Unpaid')),
+        ('partial', _('Partially paid')),
+        ('paid', _('Paid')),
+        ('refunded', _('Refunded')),
+    ]
     reference_code = models.CharField(max_length=50, unique=True, db_index=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='requests')
     service_type = models.ForeignKey(ServiceType, on_delete=models.SET_NULL, null=True, blank=True)
@@ -33,6 +39,9 @@ class TransportRequest(models.Model):
     customer_notes = models.TextField(blank=True)
     estimated_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     final_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    payment_note = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

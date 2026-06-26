@@ -12,7 +12,7 @@ push, and **update the matching row + "Last updated" here**.
 | 1 | Authenticated customer request detail page | ✅ DONE | `feat/phase-9-customer-detail` (pushed; 69/69, tsc clean, no migration) |
 | 2 | Status-change history per request | ✅ DONE | `feat/phase-9-status-history` (pushed; 70/70, tsc clean; **migration 0004**) |
 | 3 | Admin audit-log UI | ✅ DONE | `feat/phase-9-audit-ui` (pushed; 69/69, tsc clean, no migration) |
-| 4 | Payment status fields | ⬜ TODO | migration required |
+| 4 | Payment status fields | ✅ DONE | `feat/phase-9-payment` (pushed; 68/68, tsc clean; **migration, see conflict note**) |
 | 5 | Request message thread | ⬜ TODO | migration required |
 | 6 | CSV import preview | ⬜ TODO | no migration |
 | 7 | Ops dashboard (failed notifs/emails) | ⬜ TODO | migration only if EmailLog |
@@ -42,9 +42,13 @@ migration). Both touch `logistics/serializers.py`/`views.py`/`urls.py` and
 `types/request.ts` — expect small, easily-resolved overlaps. Item 2's deploy
 needs `migrate` + `saha-api` restart. (These two docs already live on `main`.)
 
-**Next: item 4 — Payment status fields** (per `phase-9-plan.md`; needs a
-migration: add payment_status/amount_paid/payment_note to TransportRequest).
-Branch off `main`.
+**Next: item 5 — Request message thread** (per `phase-9-plan.md`; needs a
+migration: new RequestComment model). Branch off `main`.
+
+**⚠️ Migration numbering conflict:** items 2 and 4 each add a `0004_*` migration
+off `main`. When merging, keep one and renumber the other (or `makemigrations
+--merge`). Any further model-adding item should re-check the latest migration
+number after the earlier ones merge.
 
 Possible follow-up: wire the item-2 owner history endpoint into the item-1
 customer detail page (a timeline on `/suivi`) — currently only the admin UI shows
@@ -52,4 +56,4 @@ the history.
 
 ---
 
-_Last updated: 2026-06-26 — items 1, 2, 3 DONE; next item 4._
+_Last updated: 2026-06-26 — items 1, 2, 3, 4 DONE; next item 5._

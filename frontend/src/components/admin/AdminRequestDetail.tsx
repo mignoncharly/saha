@@ -177,6 +177,21 @@ export default function AdminRequestDetail({ id }: Props) {
             <h2 className="mb-3 font-semibold text-gray-900">{t("Suivi")}</h2>
             <StatusTimeline currentStatus={request.status} />
           </div>
+
+          {request.status_events && request.status_events.length > 0 && (
+            <div className="card">
+              <h2 className="mb-3 font-semibold text-gray-900">{t("Historique des statuts")}</h2>
+              <ul className="space-y-2 text-sm">
+                {request.status_events.map((e) => (
+                  <li key={e.id} className="flex flex-wrap items-center gap-2 text-gray-600">
+                    <span className="text-gray-400">{formatDate(e.created_at)}</span>
+                    <span className="font-medium">{t(statusLabel(e.to_status))}</span>
+                    {e.actor_email && <span className="text-gray-400">· {e.actor_email}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Right: actions */}

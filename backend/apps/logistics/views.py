@@ -11,7 +11,7 @@ from .serializers import (
 )
 from .reference import generate_reference_code
 from .status import ALLOWED_STATUS_TRANSITIONS
-from apps.customers.models import Customer
+from apps.customers.matching import resolve_customer
 from apps.core.permissions import IsStaffOrAdmin
 from apps.core.pagination import StandardPagination
 import csv
@@ -48,28 +48,17 @@ class PublicTransportRequestCreateView(generics.CreateAPIView):
         if not phone:
             return Response({'phone': [_('This field is required.')]}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create or get customer
-        customer, created = Customer.objects.get_or_create(
+        # Resolve the customer: normalized-phone matching, authenticated users
+        # attach to their own profile, and anonymous submissions never overwrite
+        # an existing customer's identity (only fill blanks).
+        customer = resolve_customer(
+            user=request.user,
+            full_name=full_name,
             phone=phone,
-            defaults={
-                'full_name': full_name,
-                'whatsapp_number': whatsapp_number,
-                'email': email,
-                'preferred_language': request.LANGUAGE_CODE,
-            }
+            whatsapp_number=whatsapp_number,
+            email=email,
+            language=request.LANGUAGE_CODE,
         )
-        # Update customer if needed
-        if not created and (
-            customer.full_name != full_name
-            or customer.email != email
-            or customer.whatsapp_number != whatsapp_number
-            or customer.preferred_language != request.LANGUAGE_CODE
-        ):
-            customer.full_name = full_name
-            customer.email = email
-            customer.whatsapp_number = whatsapp_number
-            customer.preferred_language = request.LANGUAGE_CODE
-            customer.save()
 
         # Now proceed with standard creation
         serializer = self.get_serializer(data=request.data)

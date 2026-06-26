@@ -10,6 +10,7 @@ import {
   ClipboardList,
   DollarSign,
   Bell,
+  Boxes,
   type LucideIcon,
 } from "lucide-react";
 
@@ -47,6 +48,7 @@ export const mainNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { href: "/admin/dashboard", labelKey: "admin.dashboard", icon: LayoutDashboard },
   { href: "/admin/requests", labelKey: "admin.requests", icon: ClipboardList },
+  { href: "/admin/services", labelKey: "admin.services", icon: Boxes },
   { href: "/admin/prices", labelKey: "admin.prices", icon: DollarSign },
   { href: "/admin/schedules", labelKey: "admin.pickups", icon: CalendarDays },
   { href: "/admin/loading-dates", labelKey: "admin.loadings", icon: Truck },

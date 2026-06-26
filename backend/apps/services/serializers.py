@@ -13,3 +13,11 @@ class ServiceTypeSerializer(serializers.ModelSerializer):
             data['name'] = translate_database_value(data['name'])
             data['description'] = translate_database_value(data['description'])
         return data
+
+
+class AdminServiceTypeSerializer(ServiceTypeSerializer):
+    """Admin surface: exposes catalog-management fields (active, sort_order)
+    hidden from the public service list."""
+
+    class Meta(ServiceTypeSerializer.Meta):
+        fields = ServiceTypeSerializer.Meta.fields + ('active', 'sort_order')

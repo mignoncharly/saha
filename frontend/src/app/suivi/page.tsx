@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Search, ArrowLeft, MapPin, CalendarDays, Package, Truck } from "lucide-react";
 import { api } from "@/lib/api";
-import type { TransportRequest, TransportRequestListItem } from "@/types/request";
+import type { PublicTrackingRequest, TransportRequestListItem } from "@/types/request";
 import StatusTimeline from "@/components/public/StatusTimeline";
 import WhatsAppCTA from "@/components/public/WhatsAppCTA";
 import PageHeader from "@/components/ui/PageHeader";
@@ -25,7 +25,7 @@ function SuiviInner() {
   const initialRef = searchParams.get("ref") || "";
 
   const [ref, setRef] = useState(initialRef);
-  const [request, setRequest] = useState<TransportRequest | null>(null);
+  const [request, setRequest] = useState<PublicTrackingRequest | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,7 +45,7 @@ function SuiviInner() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<TransportRequest>(`/transport-requests/${trimmed}/`);
+      const data = await api.get<PublicTrackingRequest>(`/transport-requests/${trimmed}/`);
       setRequest(data);
     } catch {
       setError(t("Demande introuvable. Vérifiez le numéro de référence."));
@@ -119,9 +119,6 @@ function SuiviInner() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h2 className="font-mono text-xl font-bold text-gray-900">{request.reference_code}</h2>
-                    {request.customer?.full_name && (
-                      <p className="text-sm text-gray-500">{t("Client : {name}", { name: request.customer.full_name })}</p>
-                    )}
                   </div>
                   <StatusBadge status={request.status} />
                 </div>
@@ -132,7 +129,6 @@ function SuiviInner() {
                       <MapPin className="h-4 w-4 text-brand-gold" /> {t("Ramassage")}
                     </p>
                     <p className="text-gray-600">{request.pickup_city}</p>
-                    <p className="text-gray-500">{request.pickup_address}</p>
                     {request.preferred_pickup_date && (
                       <p className="mt-1 flex items-center gap-1.5 text-gray-500">
                         <CalendarDays className="h-4 w-4" /> {request.preferred_pickup_date}
@@ -143,10 +139,10 @@ function SuiviInner() {
                     <p className="mb-1 flex items-center gap-1.5 font-semibold text-gray-700">
                       <Truck className="h-4 w-4 text-brand-gold" /> {t("Destination")}
                     </p>
-                    <p className="text-gray-600">{request.destination_city?.name || "—"}</p>
-                    {request.service_type?.name && (
+                    <p className="text-gray-600">{request.destination_name || "—"}</p>
+                    {request.service_type_name && (
                       <p className="mt-1 flex items-center gap-1.5 text-gray-500">
-                        <Package className="h-4 w-4" /> {request.service_type.name}
+                        <Package className="h-4 w-4" /> {request.service_type_name}
                       </p>
                     )}
                   </div>
@@ -158,7 +154,7 @@ function SuiviInner() {
                 </div>
 
                 <div className="border-t border-gray-100 pt-4">
-                  <WhatsAppCTA reference={request.reference_code} pickup={request.pickup_city} destination={request.destination_city?.name} />
+                  <WhatsAppCTA reference={request.reference_code} pickup={request.pickup_city} destination={request.destination_name ?? undefined} />
                 </div>
               </div>
             )}

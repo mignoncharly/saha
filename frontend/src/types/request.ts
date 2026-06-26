@@ -26,6 +26,23 @@ export interface PublicTrackingRequest {
   created_at: string;
 }
 
+// Owner detail shape returned by GET /transport-requests/my-requests/{ref}/
+// (apps.logistics.serializers.CustomerTransportRequestDetailSerializer).
+// Superset of the public tracking shape with the owner's private fields —
+// address, prices, photos, their own notes — but never internal_notes.
+export interface CustomerTrackingRequest extends PublicTrackingRequest {
+  pickup_address?: string;
+  quantity?: number;
+  dimensions?: string;
+  estimated_weight?: string;
+  description?: string;
+  customer_notes?: string;
+  estimated_price?: string | null;
+  final_price?: string | null;
+  photos?: Array<{ id: number; image: string; uploaded_at: string }>;
+  updated_at?: string;
+}
+
 // Full detail shape (apps.logistics.serializers.TransportRequestDetailSerializer).
 export interface TransportRequest {
   id: number;

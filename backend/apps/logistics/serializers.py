@@ -47,6 +47,31 @@ class PublicTransportRequestTrackingSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class CustomerTransportRequestDetailSerializer(serializers.ModelSerializer):
+    """Full detail of a request for its OWNER (an authenticated customer).
+
+    Includes the private fields the customer is entitled to see about their own
+    shipment — address, prices, photos, their own notes — but NEVER the
+    admin-only ``internal_notes``.
+    """
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    service_type_name = serializers.CharField(source='service_type.name', read_only=True)
+    destination_name = serializers.CharField(source='destination_city.name', read_only=True)
+    photos = TransportRequestPhotoSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = TransportRequest
+        fields = (
+            'reference_code', 'status', 'status_display',
+            'service_type_name', 'pickup_city', 'pickup_address',
+            'preferred_pickup_date', 'destination_name',
+            'quantity', 'dimensions', 'estimated_weight', 'description',
+            'customer_notes', 'estimated_price', 'final_price',
+            'photos', 'created_at', 'updated_at',
+        )
+        read_only_fields = fields
+
+
 class TransportRequestDetailSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer(read_only=True)
     service_type = ServiceTypeSerializer(read_only=True)

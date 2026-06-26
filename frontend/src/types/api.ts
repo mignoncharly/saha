@@ -3,6 +3,8 @@ export interface ServiceType {
   name: string;
   description: string;
   icon: string;
+  active?: boolean;
+  sort_order?: number;
 }
 
 export interface PriceRule {

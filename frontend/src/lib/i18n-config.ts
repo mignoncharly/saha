@@ -533,6 +533,7 @@ const de: Record<string, string> = {
   "Tarif": "Preis",
   "Prix estimé": "Geschätzter Preis",
   "Prix final": "Endpreis",
+  "Historique des statuts": "Statusverlauf",
   "Le libellé est requis.": "Die Bezeichnung ist erforderlich.",
   "Tarif mis à jour.": "Preis aktualisiert.",
   "Supprimer ce tarif ?": "Diesen Preis löschen?",

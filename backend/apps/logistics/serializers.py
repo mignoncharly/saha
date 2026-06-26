@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import TransportRequest, TransportRequestPhoto
+from .models import TransportRequest, TransportRequestPhoto, RequestStatusEvent
 from apps.customers.serializers import CustomerSerializer
 from apps.services.serializers import ServiceTypeSerializer
 from apps.destinations.serializers import DestinationCitySerializer
@@ -10,6 +10,14 @@ class TransportRequestPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransportRequestPhoto
         fields = ('id', 'image', 'uploaded_at')
+
+class RequestStatusEventSerializer(serializers.ModelSerializer):
+    actor_email = serializers.CharField(source='actor.email', read_only=True, default=None)
+
+    class Meta:
+        model = RequestStatusEvent
+        fields = ('id', 'from_status', 'to_status', 'actor_email', 'note', 'created_at')
+        read_only_fields = fields
 
 class TransportRequestListSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.full_name', read_only=True)
@@ -77,6 +85,7 @@ class TransportRequestDetailSerializer(serializers.ModelSerializer):
     service_type = ServiceTypeSerializer(read_only=True)
     destination_city = DestinationCitySerializer(read_only=True)
     photos = TransportRequestPhotoSerializer(many=True, read_only=True)
+    status_events = RequestStatusEventSerializer(many=True, read_only=True)
 
     class Meta:
         model = TransportRequest

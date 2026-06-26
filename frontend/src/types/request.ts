@@ -74,6 +74,14 @@ export interface TransportRequest {
   estimated_price: string | null;
   final_price: string | null;
   photos: Array<{ id: number; image: string; uploaded_at: string }>;
+  status_events?: Array<{
+    id: number;
+    from_status: string;
+    to_status: string;
+    actor_email: string | null;
+    note: string;
+    created_at: string;
+  }>;
   created_at: string;
   updated_at: string;
 }

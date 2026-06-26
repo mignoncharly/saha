@@ -46,6 +46,9 @@ export default function AdminRequestDetail({ id }: Props) {
   const [internalNotes, setInternalNotes] = useState("");
   const [estimatedPrice, setEstimatedPrice] = useState("");
   const [finalPrice, setFinalPrice] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("unpaid");
+  const [amountPaid, setAmountPaid] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
   const [statusLoading, setStatusLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -57,6 +60,9 @@ export default function AdminRequestDetail({ id }: Props) {
         setInternalNotes(data.internal_notes || "");
         setEstimatedPrice(data.estimated_price || "");
         setFinalPrice(data.final_price || "");
+        setPaymentStatus(data.payment_status || "unpaid");
+        setAmountPaid(data.amount_paid || "");
+        setPaymentNote(data.payment_note || "");
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
@@ -86,6 +92,9 @@ export default function AdminRequestDetail({ id }: Props) {
         internal_notes: internalNotes,
         estimated_price: estimatedPrice === "" ? null : estimatedPrice,
         final_price: finalPrice === "" ? null : finalPrice,
+        payment_status: paymentStatus,
+        amount_paid: amountPaid === "" ? 0 : amountPaid,
+        payment_note: paymentNote,
       });
       setRequest(updated);
       toast.success(t("Modifications enregistrées."));
@@ -205,6 +214,17 @@ export default function AdminRequestDetail({ id }: Props) {
             <input id="est-price" type="number" step="0.01" value={estimatedPrice} onChange={(e) => setEstimatedPrice(e.target.value)} className="input mb-3" />
             <label className="label" htmlFor="final-price">{t("Prix final (EUR)")}</label>
             <input id="final-price" type="number" step="0.01" value={finalPrice} onChange={(e) => setFinalPrice(e.target.value)} className="input mb-3" />
+            <label className="label" htmlFor="pay-status">{t("Paiement")}</label>
+            <select id="pay-status" value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} className="input mb-3">
+              <option value="unpaid">{t("Non payé")}</option>
+              <option value="partial">{t("Partiellement payé")}</option>
+              <option value="paid">{t("Payé")}</option>
+              <option value="refunded">{t("Remboursé")}</option>
+            </select>
+            <label className="label" htmlFor="amount-paid">{t("Montant payé (EUR)")}</label>
+            <input id="amount-paid" type="number" step="0.01" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)} className="input mb-3" />
+            <label className="label" htmlFor="pay-note">{t("Note de paiement")}</label>
+            <input id="pay-note" value={paymentNote} onChange={(e) => setPaymentNote(e.target.value)} className="input mb-3" />
             <label className="label" htmlFor="notes">{t("Notes internes")}</label>
             <textarea id="notes" rows={4} value={internalNotes} onChange={(e) => setInternalNotes(e.target.value)} className="input" />
             <button onClick={handleSave} disabled={saving} className="btn-secondary mt-3 w-full">

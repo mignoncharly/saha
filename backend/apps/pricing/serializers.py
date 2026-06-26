@@ -15,3 +15,11 @@ class PriceRuleSerializer(serializers.ModelSerializer):
             for field in ('service_name', 'label', 'unit', 'description'):
                 data[field] = translate_database_value(data[field])
         return data
+
+
+class AdminPriceRuleSerializer(PriceRuleSerializer):
+    """Admin surface: exposes the lifecycle fields the public list hides so the
+    admin UI can actually set them (active toggle, validity window)."""
+
+    class Meta(PriceRuleSerializer.Meta):
+        fields = PriceRuleSerializer.Meta.fields + ('active', 'valid_from', 'valid_until')

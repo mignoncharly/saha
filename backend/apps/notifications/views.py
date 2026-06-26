@@ -26,14 +26,44 @@ class PushSubscriptionCreateView(generics.CreateAPIView):
     permission_classes = []
     throttle_classes = [PushSubscriptionThrottle]
 
-    def perform_create(self, serializer):
-        # Link the subscription to the authenticated customer so that
-        # per-request status notifications can target them later.
-        customer = None
-        user = self.request.user
-        if user.is_authenticated:
-            customer = getattr(user, 'customer_profile', None)
-        serializer.save(customer=customer)
+    def create(self, request, *args, **kwargs):
+        # Upsert by endpoint: a device that re-subscribes (e.g. after a VAPID
+        # rotation or re-enabling notifications) updates its row and is
+        # reactivated, rather than colliding with the unique endpoint.
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        defaults = {
+            'p256dh': data['p256dh'],
+            'auth': data['auth'],
+            'region': data.get('region', ''),
+            'language': data.get('language', 'fr'),
+            'active': True,
+        }
+        # Only (re)link a customer when we have one — don't unlink an existing
+        # subscription if an anonymous client re-subscribes the same endpoint.
+        customer = _customer_of(request)
+        if customer is not None:
+            defaults['customer'] = customer
+        sub, created = PushSubscription.objects.update_or_create(
+            endpoint=data['endpoint'], defaults=defaults,
+        )
+        out = self.get_serializer(sub).data
+        return Response(out, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+
+class PushUnsubscribeView(APIView):
+    permission_classes = []
+    throttle_classes = [PushSubscriptionThrottle]
+
+    def post(self, request):
+        # Deactivate a device by its push endpoint (the device knows its own
+        # endpoint). Idempotent and intentionally generic about whether it existed.
+        endpoint = request.data.get('endpoint')
+        if not endpoint:
+            return Response({'detail': _('endpoint is required.')}, status=status.HTTP_400_BAD_REQUEST)
+        deactivated = PushSubscription.objects.filter(endpoint=endpoint).update(active=False)
+        return Response({'deactivated': deactivated})
 
 class VapidPublicKeyView(APIView):
     permission_classes = [AllowAny]

@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('subscribe/', views.PushSubscriptionCreateView.as_view(), name='push-subscribe'),
+    path('unsubscribe/', views.PushUnsubscribeView.as_view(), name='push-unsubscribe'),
     path('vapid-public-key/', views.VapidPublicKeyView.as_view(), name='vapid-public-key'),
     # Customer notification center
     path('me/', views.CustomerNotificationListView.as_view(), name='customer-notifications'),

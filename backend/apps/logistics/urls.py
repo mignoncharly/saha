@@ -4,5 +4,6 @@ from . import views
 urlpatterns = [
     path('', views.PublicTransportRequestCreateView.as_view(), name='transport-request-create'),
     path('my-requests/', views.CustomerRequestListView.as_view(), name='customer-request-list'),
+    path('my-requests/<str:reference_code>/history/', views.CustomerRequestStatusHistoryView.as_view(), name='customer-request-history'),
     path('<str:reference_code>/', views.PublicTransportRequestDetailView.as_view(), name='transport-request-detail'),
 ]

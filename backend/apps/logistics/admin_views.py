@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from .models import TransportRequest
+from .models import TransportRequest, RequestStatusEvent
 from .serializers import TransportRequestDetailSerializer
 from .status import ALLOWED_STATUS_TRANSITIONS
 from .admin_serializers import BulkStatusUpdateSerializer
@@ -21,8 +21,13 @@ class BulkStatusUpdateView(generics.GenericAPIView):
         for req in requests:
             allowed = ALLOWED_STATUS_TRANSITIONS.get(req.status, [])
             if new_status in allowed:
+                old_status = req.status
                 req.status = new_status
                 req.save()
+                RequestStatusEvent.objects.create(
+                    request=req, from_status=old_status, to_status=new_status,
+                    actor=request.user if request.user.is_authenticated else None,
+                )
                 updated += 1
                 send_status_change_notification.delay(req.id)
         return Response({'updated': updated, 'total': len(ids)})

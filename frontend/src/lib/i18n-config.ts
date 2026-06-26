@@ -530,6 +530,7 @@ const de: Record<string, string> = {
   "Supprimer ce service ?": "Diese Leistung löschen?",
   "Chargement des services…": "Leistungen werden geladen …",
   "Erreur de chargement des tarifs.": "Fehler beim Laden der Preise.",
+  "Historique des statuts": "Statusverlauf",
   "Le libellé est requis.": "Die Bezeichnung ist erforderlich.",
   "Tarif mis à jour.": "Preis aktualisiert.",
   "Supprimer ce tarif ?": "Diesen Preis löschen?",

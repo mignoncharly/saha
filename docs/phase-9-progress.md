@@ -9,11 +9,11 @@ push, and **update the matching row + "Last updated" here**.
 
 | # | Feature | Status | Branch / notes |
 |---|---------|--------|----------------|
-| 1 | Authenticated customer request detail page | ✅ DONE | `feat/phase-9-customer-detail` (pushed; 69/69, tsc clean, no migration) |
+| 1 | Authenticated customer request detail page | ✅ DONE (merged) | `feat/phase-9-customer-detail` (pushed; 69/69, tsc clean, no migration) |
 | 2 | Status-change history per request | ✅ DONE | `feat/phase-9-status-history` (pushed; 70/70, tsc clean; **migration 0004**) |
 | 3 | Admin audit-log UI | ✅ DONE | `feat/phase-9-audit-ui` (pushed; 69/69, tsc clean, no migration) |
 | 4 | Payment status fields | ✅ DONE | `feat/phase-9-payment` (pushed; 68/68, tsc clean; **migration, see conflict note**) |
-| 5 | Request message thread | ⬜ TODO | migration required |
+| 5 | Request message thread | ✅ DONE | merged to main |
 | 6 | CSV import preview | ⬜ TODO | no migration |
 | 7 | Ops dashboard (failed notifs/emails) | ⬜ TODO | migration only if EmailLog |
 | 8 | Data-retention workflow | ⬜ TODO | restarts worker/beat |

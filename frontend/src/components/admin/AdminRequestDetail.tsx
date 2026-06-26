@@ -38,6 +38,14 @@ function InfoRow({ label, children }: { label: string; children: React.ReactNode
   );
 }
 
+interface CommentRow {
+  id: number;
+  author_email: string | null;
+  body: string;
+  is_internal: boolean;
+  created_at: string;
+}
+
 export default function AdminRequestDetail({ id }: Props) {
   const { t, formatDate } = useTranslation();
   const [request, setRequest] = useState<TransportRequest | null>(null);
@@ -48,6 +56,24 @@ export default function AdminRequestDetail({ id }: Props) {
   const [finalPrice, setFinalPrice] = useState("");
   const [statusLoading, setStatusLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [comments, setComments] = useState<CommentRow[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [commentInternal, setCommentInternal] = useState(false);
+
+  const loadComments = () =>
+    api.get<CommentRow[]>(`/admin/requests/${id}/comments/`).then(setComments).catch(() => {});
+
+  const postComment = async () => {
+    if (!newComment.trim()) return;
+    try {
+      await api.post(`/admin/requests/${id}/comments/`, { body: newComment, is_internal: commentInternal });
+      setNewComment("");
+      setCommentInternal(false);
+      loadComments();
+    } catch {
+      toast.error(t("Erreur lors de l'envoi."));
+    }
+  };
 
   useEffect(() => {
     api
@@ -60,6 +86,7 @@ export default function AdminRequestDetail({ id }: Props) {
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
+    loadComments();
   }, [id]);
 
   const handleStatusChange = async (newStatus: string) => {
@@ -176,6 +203,27 @@ export default function AdminRequestDetail({ id }: Props) {
           <div className="card">
             <h2 className="mb-3 font-semibold text-gray-900">{t("Suivi")}</h2>
             <StatusTimeline currentStatus={request.status} />
+          </div>
+
+          <div className="card">
+            <h2 className="mb-3 font-semibold text-gray-900">{t("Commentaires")}</h2>
+            <div className="space-y-2">
+              {comments.length === 0 && <p className="text-sm text-gray-400">{t("Aucun commentaire")}</p>}
+              {comments.map((c) => (
+                <div key={c.id} className={`rounded-lg p-2 text-sm ${c.is_internal ? "bg-amber-50" : "bg-gray-50"}`}>
+                  <p className="text-gray-700">{c.body}</p>
+                  <p className="mt-0.5 text-xs text-gray-400">
+                    {c.author_email || t("Système")} · {formatDate(c.created_at)}{c.is_internal ? ` · ${t("Interne")}` : ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <textarea rows={2} value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder={t("Ajouter un commentaire…")} className="input mt-3" />
+            <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">
+              <input type="checkbox" checked={commentInternal} onChange={(e) => setCommentInternal(e.target.checked)} className="h-4 w-4" />
+              {t("Interne (non visible par le client)")}
+            </label>
+            <button onClick={postComment} className="btn-secondary mt-2 w-full">{t("Envoyer")}</button>
           </div>
         </div>
 

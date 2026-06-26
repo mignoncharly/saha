@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import TransportRequest, TransportRequestPhoto
+from .models import TransportRequest, TransportRequestPhoto, RequestComment
 from apps.customers.serializers import CustomerSerializer
 from apps.services.serializers import ServiceTypeSerializer
 from apps.destinations.serializers import DestinationCitySerializer
@@ -96,3 +96,13 @@ class TransportRequestCreateSerializer(serializers.ModelSerializer):
 class TransportRequestStatusSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=TransportRequest.STATUS_CHOICES)
     internal_notes = serializers.CharField(required=False, allow_blank=True)
+
+
+class RequestCommentSerializer(serializers.ModelSerializer):
+    author_email = serializers.CharField(source='author.email', read_only=True, default=None)
+
+    class Meta:
+        model = RequestComment
+        fields = ('id', 'author_email', 'body', 'is_internal', 'created_at')
+        # is_internal is set server-side per role (owner -> always False).
+        read_only_fields = ('id', 'author_email', 'is_internal', 'created_at')

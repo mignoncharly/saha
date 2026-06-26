@@ -64,6 +64,16 @@ export interface NotificationPreference {
   updated_at: string;
 }
 
+export interface DashboardNotificationFailure {
+  id: number;
+  title: string;
+  target_type: string;
+  target_region: string;
+  sent_count: number;
+  failed_count: number;
+  created_at: string;
+}
+
 export interface DashboardStats {
   total_requests: number;
   new_requests: number;
@@ -72,4 +82,10 @@ export interface DashboardStats {
   by_destination_city: Array<{ destination_city__name: string; count: number }>;
   by_status: Array<{ status: string; count: number }>;
   requests_over_time: Array<{ date: string; count: number }>;
+  ops: {
+    failed_notification_logs_30d: number;
+    failed_notifications_30d: number;
+    inactive_push_subscriptions: number;
+    recent_failed_notifications: DashboardNotificationFailure[];
+  };
 }

@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import TransportRequest
+from .models import TransportRequest, RequestStatusEvent
 from .serializers import (
     TransportRequestListSerializer,
     TransportRequestDetailSerializer,
@@ -9,6 +9,7 @@ from .serializers import (
     TransportRequestStatusSerializer,
     PublicTransportRequestTrackingSerializer,
     CustomerTransportRequestDetailSerializer,
+    RequestStatusEventSerializer,
 )
 from .status import ALLOWED_STATUS_TRANSITIONS
 from apps.customers.matching import resolve_customer
@@ -124,10 +125,17 @@ class AdminTransportRequestStatusUpdateView(generics.UpdateAPIView):
                 }},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        old_status = instance.status
+        note = serializer.validated_data.get('internal_notes', '')
         instance.status = new_status
-        if serializer.validated_data.get('internal_notes'):
-            instance.internal_notes = serializer.validated_data['internal_notes']
+        if note:
+            instance.internal_notes = note
         instance.save()
+        # Persist the transition for the customer-facing history.
+        RequestStatusEvent.objects.create(
+            request=instance, from_status=old_status, to_status=new_status,
+            actor=request.user if request.user.is_authenticated else None, note=note,
+        )
         # Trigger push notification (async)
         send_status_change_notification.delay(instance.id)
         return Response(TransportRequestDetailSerializer(instance).data)
@@ -185,3 +193,18 @@ class CustomerRequestDetailView(generics.RetrieveAPIView):
         return TransportRequest.objects.select_related(
             'service_type', 'destination_city'
         ).filter(customer=customer)
+
+
+class CustomerRequestStatusHistoryView(generics.ListAPIView):
+    # Status-change history for the authenticated customer's OWN request.
+    serializer_class = RequestStatusEventSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        customer = getattr(self.request.user, 'customer_profile', None)
+        if not customer:
+            return RequestStatusEvent.objects.none()
+        return RequestStatusEvent.objects.filter(
+            request__reference_code=self.kwargs['reference_code'],
+            request__customer=customer,
+        ).select_related('actor')

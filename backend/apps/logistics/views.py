@@ -7,6 +7,7 @@ from .serializers import (
     TransportRequestDetailSerializer,
     TransportRequestCreateSerializer,
     TransportRequestStatusSerializer,
+    PublicTransportRequestTrackingSerializer,
 )
 from .reference import generate_reference_code
 from .status import ALLOWED_STATUS_TRANSITIONS
@@ -88,8 +89,11 @@ class PublicTransportRequestCreateView(generics.CreateAPIView):
         return serializer.save(customer=customer, reference_code=reference_code)
 
 class PublicTransportRequestDetailView(generics.RetrieveAPIView):
-    queryset = TransportRequest.objects.all()
-    serializer_class = TransportRequestDetailSerializer
+    # Anonymous tracking by reference code. Uses the minimal privacy-safe
+    # serializer so a leaked/guessed reference never exposes customer PII,
+    # addresses, internal notes, prices, or photos.
+    queryset = TransportRequest.objects.select_related('service_type', 'destination_city')
+    serializer_class = PublicTransportRequestTrackingSerializer
     permission_classes = []
     lookup_field = 'reference_code'
     lookup_url_kwarg = 'reference_code'

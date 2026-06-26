@@ -11,6 +11,21 @@ export interface TransportRequestListItem {
   preferred_pickup_date: string | null;
 }
 
+// Minimal privacy-safe shape returned by the public tracking endpoint
+// GET /transport-requests/{reference_code}/
+// (apps.logistics.serializers.PublicTransportRequestTrackingSerializer).
+// Deliberately carries no customer PII, address, notes, prices, or photos.
+export interface PublicTrackingRequest {
+  reference_code: string;
+  status: string;
+  status_display: string;
+  service_type_name: string | null;
+  pickup_city: string;
+  destination_name: string | null;
+  preferred_pickup_date: string | null;
+  created_at: string;
+}
+
 // Full detail shape (apps.logistics.serializers.TransportRequestDetailSerializer).
 export interface TransportRequest {
   id: number;

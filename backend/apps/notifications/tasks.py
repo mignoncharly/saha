@@ -4,7 +4,7 @@ from django.conf import settings
 from django.utils import translation
 from django.utils.translation import gettext as _
 from .models import PushSubscription, NotificationLog
-from .webpush import send_web_push
+from .webpush import send_web_push, PUSH_OK, PUSH_GONE, PUSH_FAILED
 from . import emails
 import json
 import logging
@@ -48,26 +48,43 @@ def send_broadcast_notification(notification_log_id):
         "body": log.body,
         "icon": "/icons/icon-192.png",
     })
-    sent = 0
-    failed = 0
-    for sub in subs:
-        if sub.customer_id and sub.customer_id in opted_out:
-            continue
-        try:
-            success = send_web_push(
-                {"endpoint": sub.endpoint, "p256dh": sub.p256dh, "auth": sub.auth},
-                payload
-            )
-            if success:
-                sent += 1
-            else:
-                failed += 1
-        except Exception:
-            failed += 1
+    sent, failed, gone_ids = _deliver(subs, payload, skip_opted_out=opted_out)
     log.sent_count = sent
     log.failed_count = failed
     log.save()
+    if gone_ids:
+        PushSubscription.objects.filter(id__in=gone_ids).update(active=False)
     return sent, failed
+
+
+def _deliver(subs, payload, skip_opted_out=None):
+    """Push `payload` to each subscription, returning (sent, failed, gone_ids).
+
+    gone_ids are subscriptions the push service reported as expired/unsubscribed;
+    callers deactivate them so we stop targeting dead devices.
+    """
+    skip_opted_out = skip_opted_out or set()
+    sent = 0
+    failed = 0
+    gone_ids = []
+    for sub in subs:
+        if sub.customer_id and sub.customer_id in skip_opted_out:
+            continue
+        try:
+            result = send_web_push(
+                {"endpoint": sub.endpoint, "p256dh": sub.p256dh, "auth": sub.auth},
+                payload,
+            )
+        except Exception:
+            logger.exception("Unexpected error sending push to subscription %s", sub.id)
+            result = PUSH_FAILED
+        if result == PUSH_OK:
+            sent += 1
+        else:
+            failed += 1
+            if result == PUSH_GONE:
+                gone_ids.append(sub.id)
+    return sent, failed, gone_ids
 
 @shared_task
 def send_status_change_notification(request_id):
@@ -105,20 +122,9 @@ def send_status_change_notification(request_id):
         "body": body,
         "icon": "/icons/icon-192.png",
     })
-    sent = 0
-    failed = 0
-    for sub in subs:
-        try:
-            success = send_web_push(
-                {"endpoint": sub.endpoint, "p256dh": sub.p256dh, "auth": sub.auth},
-                payload,
-            )
-            if success:
-                sent += 1
-            else:
-                failed += 1
-        except Exception:
-            failed += 1
+    sent, failed, gone_ids = _deliver(subs, payload)
+    if gone_ids:
+        PushSubscription.objects.filter(id__in=gone_ids).update(active=False)
     NotificationLog.objects.create(
         title=log_title,
         body=str(status_label),

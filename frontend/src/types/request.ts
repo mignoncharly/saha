@@ -73,6 +73,9 @@ export interface TransportRequest {
   customer_notes: string;
   estimated_price: string | null;
   final_price: string | null;
+  payment_status: string;
+  amount_paid: string;
+  payment_note: string;
   photos: Array<{ id: number; image: string; uploaded_at: string }>;
   status_events?: Array<{
     id: number;

@@ -3,6 +3,10 @@ from .models import PushSubscription, CustomerNotification, NotificationPreferen
 from django.utils.translation import gettext_lazy as _
 
 class PushSubscriptionSerializer(serializers.ModelSerializer):
+    # Drop the auto unique-endpoint validator: re-subscribing the same device is
+    # an upsert (handled in the view), not a 400.
+    endpoint = serializers.CharField(validators=[])
+
     class Meta:
         model = PushSubscription
         fields = ('endpoint', 'p256dh', 'auth', 'region', 'language')

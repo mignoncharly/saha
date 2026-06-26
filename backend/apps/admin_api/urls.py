@@ -9,4 +9,5 @@ urlpatterns = [
     path('pickup-schedules/', include('apps.schedules.admin_urls_pickup')),
     path('loading-dates/', include('apps.schedules.admin_urls_loading')),
     path('broadcast/', include('apps.notifications.admin_urls')),
+    path('audit/', include('apps.audit.admin_urls')),
 ]

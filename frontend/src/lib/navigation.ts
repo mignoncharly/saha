@@ -11,6 +11,7 @@ import {
   DollarSign,
   Bell,
   Boxes,
+  ScrollText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -53,6 +54,7 @@ export const adminNav: NavItem[] = [
   { href: "/admin/schedules", labelKey: "admin.pickups", icon: CalendarDays },
   { href: "/admin/loading-dates", labelKey: "admin.loadings", icon: Truck },
   { href: "/admin/notifications", labelKey: "admin.notifications", icon: Bell },
+  { href: "/admin/audit", labelKey: "admin.audit", icon: ScrollText },
 ];
 
 /** True for a path that is the active route (exact for "/", prefix otherwise). */

@@ -11,6 +11,9 @@ export default function AdminSchedulesPage() {
   const { t } = useTranslation();
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
+  // Bumping this key remounts the editor, which re-fetches its data — a
+  // targeted refresh instead of a full-page reload after a CSV import.
+  const [reloadKey, setReloadKey] = useState(0);
 
   const handleExport = async () => {
     try {
@@ -29,7 +32,7 @@ export default function AdminSchedulesPage() {
       const res = await api.postFormData<any>("/admin/pickup-schedules/import/", formData);
       toast.success(t("Import réussi : {created} créé(s), {updated} mis à jour.", { created: res.created, updated: res.updated }));
       setImportFile(null);
-      window.location.reload();
+      setReloadKey((k) => k + 1);
     } catch {
       toast.error(t("Erreur lors de l'import."));
     } finally {
@@ -54,7 +57,7 @@ export default function AdminSchedulesPage() {
             </button>
           )}
         </div>
-        <AdminScheduleEditor />
+        <AdminScheduleEditor key={reloadKey} />
       </div>
     </AdminLayout>
   );

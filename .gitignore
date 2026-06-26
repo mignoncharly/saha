@@ -27,6 +27,7 @@ env/
 backend/staticfiles/
 backend/logs/
 backend/media/
+backend/test_media/
 
 # ---- Node / Next.js frontend ----
 node_modules/

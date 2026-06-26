@@ -11,7 +11,7 @@ push, and **update the matching row + "Last updated" here**.
 |---|---------|--------|----------------|
 | 1 | Authenticated customer request detail page | ✅ DONE | `feat/phase-9-customer-detail` (pushed; 69/69, tsc clean, no migration) |
 | 2 | Status-change history per request | ✅ DONE | `feat/phase-9-status-history` (pushed; 70/70, tsc clean; **migration 0004**) |
-| 3 | Admin audit-log UI | ⬜ TODO | no migration (AuditLog exists) |
+| 3 | Admin audit-log UI | ✅ DONE | `feat/phase-9-audit-ui` (pushed; 69/69, tsc clean, no migration) |
 | 4 | Payment status fields | ⬜ TODO | migration required |
 | 5 | Request message thread | ⬜ TODO | migration required |
 | 6 | CSV import preview | ⬜ TODO | no migration |
@@ -42,8 +42,9 @@ migration). Both touch `logistics/serializers.py`/`views.py`/`urls.py` and
 `types/request.ts` — expect small, easily-resolved overlaps. Item 2's deploy
 needs `migrate` + `saha-api` restart. (These two docs already live on `main`.)
 
-**Next: item 3 — Admin audit-log UI** (per `phase-9-plan.md`; no migration,
-`AuditLog` model already exists). Branch off `main`.
+**Next: item 4 — Payment status fields** (per `phase-9-plan.md`; needs a
+migration: add payment_status/amount_paid/payment_note to TransportRequest).
+Branch off `main`.
 
 Possible follow-up: wire the item-2 owner history endpoint into the item-1
 customer detail page (a timeline on `/suivi`) — currently only the admin UI shows
@@ -51,4 +52,4 @@ the history.
 
 ---
 
-_Last updated: 2026-06-26 — items 1 & 2 DONE; next item 3._
+_Last updated: 2026-06-26 — items 1, 2, 3 DONE; next item 4._

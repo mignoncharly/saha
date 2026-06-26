@@ -19,6 +19,34 @@ class TransportRequestListSerializer(serializers.ModelSerializer):
         model = TransportRequest
         fields = ('id', 'reference_code', 'customer_name', 'pickup_city', 'destination_name', 'status', 'created_at', 'preferred_pickup_date')
 
+class PublicTransportRequestTrackingSerializer(serializers.ModelSerializer):
+    """Minimal, privacy-safe projection for anonymous tracking by reference code.
+
+    Anyone who knows a reference code can read this, so it deliberately omits
+    everything private: customer name/phone/email, the full pickup address,
+    internal notes, prices, photos, and free-text description/notes. Only the
+    coarse shipment progress is exposed. Keep the full
+    ``TransportRequestDetailSerializer`` for admin / authenticated detail views.
+    """
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    service_type_name = serializers.CharField(source='service_type.name', read_only=True)
+    destination_name = serializers.CharField(source='destination_city.name', read_only=True)
+
+    class Meta:
+        model = TransportRequest
+        fields = (
+            'reference_code',
+            'status',
+            'status_display',
+            'service_type_name',
+            'pickup_city',
+            'destination_name',
+            'preferred_pickup_date',
+            'created_at',
+        )
+        read_only_fields = fields
+
+
 class TransportRequestDetailSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer(read_only=True)
     service_type = ServiceTypeSerializer(read_only=True)

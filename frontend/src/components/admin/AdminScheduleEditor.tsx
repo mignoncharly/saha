@@ -8,7 +8,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { Plus, Edit2, Trash2, Check, X, CalendarDays } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
-const EMPTY: Partial<PickupSchedule> = { region_name: "", cities: "", start_date: "", end_date: "", notes: "" };
+const EMPTY: Partial<PickupSchedule> = { region_name: "", cities: "", start_date: "", end_date: "", notes: "", active: true };
 
 export default function AdminScheduleEditor() {
   const { t } = useTranslation();
@@ -28,7 +28,7 @@ export default function AdminScheduleEditor() {
   const saveEdit = async () => {
     if (!editingId) return;
     try {
-      await api.patch(`/admin/pickup-schedules/${editingId}/`, editForm);
+      await api.patch(`/admin/pickup-schedules/${editingId}/`, { ...editForm, end_date: editForm.end_date || null });
       setEditingId(null);
       refresh();
       toast.success(t("Tournée mise à jour."));
@@ -51,7 +51,7 @@ export default function AdminScheduleEditor() {
   const addItem = async () => {
     if (!newForm.region_name || !newForm.start_date) return toast.error(t("Région et date de début requises."));
     try {
-      await api.post("/admin/pickup-schedules/", newForm);
+      await api.post("/admin/pickup-schedules/", { ...newForm, end_date: newForm.end_date || null });
       setAdding(false);
       setNewForm(EMPTY);
       refresh();
@@ -84,6 +84,10 @@ export default function AdminScheduleEditor() {
             <input type="date" value={newForm.end_date || ""} onChange={(e) => setNewForm({ ...newForm, end_date: e.target.value })} className="input" />
             <input placeholder={t("Notes")} value={newForm.notes} onChange={(e) => setNewForm({ ...newForm, notes: e.target.value })} className="input sm:col-span-2" />
           </div>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" checked={newForm.active !== false} onChange={(e) => setNewForm({ ...newForm, active: e.target.checked })} className="h-4 w-4" />
+            {t("Actif")}
+          </label>
           <div className="flex gap-2">
             <button onClick={addItem} className="btn-primary !px-3 !py-2 text-sm"><Check className="h-4 w-4" /> {t("Valider")}</button>
             <button onClick={() => { setAdding(false); setNewForm(EMPTY); }} className="btn-ghost !px-3 !py-2 text-sm"><X className="h-4 w-4" /> {t("Annuler")}</button>
@@ -103,6 +107,7 @@ export default function AdminScheduleEditor() {
                 <th className="px-4 py-3 text-left font-semibold">{t("Début")}</th>
                 <th className="px-4 py-3 text-left font-semibold">{t("Fin")}</th>
                 <th className="px-4 py-3 text-left font-semibold">{t("Notes")}</th>
+                <th className="px-4 py-3 text-left font-semibold">{t("Actif")}</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -116,6 +121,7 @@ export default function AdminScheduleEditor() {
                       <td className="px-4 py-2"><input type="date" value={editForm.start_date} onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })} className="input !py-1.5" /></td>
                       <td className="px-4 py-2"><input type="date" value={editForm.end_date || ""} onChange={(e) => setEditForm({ ...editForm, end_date: e.target.value })} className="input !py-1.5" /></td>
                       <td className="px-4 py-2"><input value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} className="input !py-1.5" /></td>
+                      <td className="px-4 py-2"><input type="checkbox" checked={editForm.active !== false} onChange={(e) => setEditForm({ ...editForm, active: e.target.checked })} className="h-4 w-4" aria-label={t("Actif")} /></td>
                       <td className="px-4 py-2">
                         <div className="flex gap-2">
                           <button onClick={saveEdit} aria-label={t("Valider")} className="text-green-600"><Check className="h-4 w-4" /></button>
@@ -130,6 +136,11 @@ export default function AdminScheduleEditor() {
                       <td className="px-4 py-3">{s.start_date}</td>
                       <td className="px-4 py-3">{s.end_date || "—"}</td>
                       <td className="px-4 py-3 text-gray-500">{s.notes}</td>
+                      <td className="px-4 py-3">
+                        <span className={`badge ${s.active !== false ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
+                          {s.active !== false ? t("Actif") : t("Inactif")}
+                        </span>
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <button onClick={() => { setEditingId(s.id); setEditForm({ ...s }); }} aria-label={t("Modifier")} className="text-brand-blue"><Edit2 className="h-4 w-4" /></button>

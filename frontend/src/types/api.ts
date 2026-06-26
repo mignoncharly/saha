@@ -21,10 +21,12 @@ export interface PickupSchedule {
   id: number;
   region?: number;
   region_name: string;
+  title?: string;
   cities: string;
   start_date: string;
   end_date: string | null;
   notes: string;
+  active?: boolean;
 }
 
 export interface LoadingDate {

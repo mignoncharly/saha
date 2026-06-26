@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Search, ArrowLeft, MapPin, CalendarDays, Package, Truck } from "lucide-react";
 import { api } from "@/lib/api";
-import type { PublicTrackingRequest, TransportRequestListItem } from "@/types/request";
+import type { CustomerTrackingRequest, TransportRequestListItem } from "@/types/request";
 import StatusTimeline from "@/components/public/StatusTimeline";
 import WhatsAppCTA from "@/components/public/WhatsAppCTA";
 import PageHeader from "@/components/ui/PageHeader";
@@ -25,7 +25,7 @@ function SuiviInner() {
   const initialRef = searchParams.get("ref") || "";
 
   const [ref, setRef] = useState(initialRef);
-  const [request, setRequest] = useState<PublicTrackingRequest | null>(null);
+  const [request, setRequest] = useState<CustomerTrackingRequest | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,7 +45,12 @@ function SuiviInner() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<PublicTrackingRequest>(`/transport-requests/${trimmed}/`);
+      // Logged-in customers get the full owner detail (address/prices/photos);
+      // guests get the minimal privacy-safe public tracking shape.
+      const endpoint = role === "customer"
+        ? `/transport-requests/my-requests/${trimmed}/`
+        : `/transport-requests/${trimmed}/`;
+      const data = await api.get<CustomerTrackingRequest>(endpoint);
       setRequest(data);
     } catch {
       setError(t("Demande introuvable. Vérifiez le numéro de référence."));
@@ -53,7 +58,7 @@ function SuiviInner() {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, role]);
 
   useEffect(() => {
     if (initialRef) doSearch(initialRef);
@@ -129,6 +134,7 @@ function SuiviInner() {
                       <MapPin className="h-4 w-4 text-brand-gold" /> {t("Ramassage")}
                     </p>
                     <p className="text-gray-600">{request.pickup_city}</p>
+                    {request.pickup_address && <p className="text-gray-500">{request.pickup_address}</p>}
                     {request.preferred_pickup_date && (
                       <p className="mt-1 flex items-center gap-1.5 text-gray-500">
                         <CalendarDays className="h-4 w-4" /> {request.preferred_pickup_date}
@@ -147,6 +153,30 @@ function SuiviInner() {
                     )}
                   </div>
                 </div>
+
+                {(request.estimated_price || request.final_price) && (
+                  <div className="rounded-xl bg-brand-light p-4 text-sm">
+                    <p className="mb-1 font-semibold text-gray-700">{t("Tarif")}</p>
+                    {request.estimated_price && (
+                      <p className="text-gray-600">{t("Prix estimé")} : {request.estimated_price} €</p>
+                    )}
+                    {request.final_price && (
+                      <p className="text-gray-900">{t("Prix final")} : {request.final_price} €</p>
+                    )}
+                  </div>
+                )}
+
+                {request.photos && request.photos.length > 0 && (
+                  <div>
+                    <p className="mb-2 text-sm font-semibold text-gray-700">{t("Photos")}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {request.photos.map((p) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={p.id} src={p.image} alt="" className="h-20 w-20 rounded-lg object-cover" />
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <h3 className="mb-3 text-lg font-bold text-gray-900">{t("État d'avancement")}</h3>

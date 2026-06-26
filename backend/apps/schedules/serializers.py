@@ -24,3 +24,11 @@ class LoadingDateSerializer(serializers.ModelSerializer):
             data['title'] = translate_database_value(data['title'])
             data['description'] = translate_database_value(data['description'])
         return data
+
+
+class AdminLoadingDateSerializer(LoadingDateSerializer):
+    """Admin surface: exposes ``active`` so loadings can be toggled without
+    deletion (the public list already hides inactive ones)."""
+
+    class Meta(LoadingDateSerializer.Meta):
+        fields = LoadingDateSerializer.Meta.fields + ('active',)

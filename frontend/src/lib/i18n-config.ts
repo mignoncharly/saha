@@ -511,6 +511,7 @@ const de: Record<string, string> = {
   "Aucun tarif": "Kein Preis",
   "Ajoutez votre premier tarif indicatif.": "Fügen Sie Ihren ersten Richtpreis hinzu.",
   "Actif": "Aktiv",
+  "Inactif": "Inaktiv",
   "Erreur de chargement des tarifs.": "Fehler beim Laden der Preise.",
   "Le libellé est requis.": "Die Bezeichnung ist erforderlich.",
   "Tarif mis à jour.": "Preis aktualisiert.",

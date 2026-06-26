@@ -1,10 +1,13 @@
 from datetime import date, timedelta
 
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from apps.schedules.models import LoadingDate, PickupRegion, PickupSchedule
+
+User = get_user_model()
 
 
 class ScheduleTests(APITestCase):
@@ -44,3 +47,29 @@ class ScheduleTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["title"], "Chargement Juillet")
+
+
+class AdminLoadingDateTests(APITestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            email="admin@example.com", password="StrongPass123!", role="admin"
+        )
+        self.client.force_authenticate(self.admin)
+        self.loading = LoadingDate.objects.create(
+            date=timezone.localdate() + timedelta(days=10), title="Chargement", active=True
+        )
+
+    def test_admin_list_exposes_active(self):
+        response = self.client.get(reverse("admin-loading-date-list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("active", response.data[0])
+
+    def test_deactivate_drops_from_public_list(self):
+        url = reverse("admin-loading-date-detail", kwargs={"pk": self.loading.pk})
+        response = self.client.patch(url, {"active": False}, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.loading.refresh_from_db()
+        self.assertFalse(self.loading.active)
+        self.client.force_authenticate(None)
+        public = self.client.get(reverse("loading-date-list"))
+        self.assertEqual(len(public.data), 0)

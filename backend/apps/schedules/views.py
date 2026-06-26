@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
 from django.utils import timezone
 from .models import PickupSchedule, LoadingDate
-from .serializers import PickupScheduleSerializer, LoadingDateSerializer
+from .serializers import PickupScheduleSerializer, LoadingDateSerializer, AdminLoadingDateSerializer
 from apps.core.permissions import IsStaffOrAdmin
 
 class PickupScheduleListView(generics.ListAPIView):
@@ -33,10 +33,10 @@ class AdminPickupScheduleDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class AdminLoadingDateListCreateView(generics.ListCreateAPIView):
     queryset = LoadingDate.objects.all().order_by('date')
-    serializer_class = LoadingDateSerializer
+    serializer_class = AdminLoadingDateSerializer
     permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]
 
 class AdminLoadingDateDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = LoadingDate.objects.all()
-    serializer_class = LoadingDateSerializer
+    serializer_class = AdminLoadingDateSerializer
     permission_classes = [permissions.IsAuthenticated, IsStaffOrAdmin]

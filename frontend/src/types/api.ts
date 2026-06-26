@@ -32,6 +32,7 @@ export interface LoadingDate {
   date: string;
   title: string;
   description: string;
+  active?: boolean;
 }
 
 export interface DestinationCity {

@@ -8,7 +8,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { Plus, Edit2, Trash2, Check, X, Truck } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
-const EMPTY: Partial<LoadingDate> = { date: "", title: "", description: "" };
+const EMPTY: Partial<LoadingDate> = { date: "", title: "", description: "", active: true };
 
 export default function AdminLoadingDateEditor() {
   const { t } = useTranslation();
@@ -82,6 +82,10 @@ export default function AdminLoadingDateEditor() {
             <input placeholder={t("Titre")} value={newForm.title} onChange={(e) => setNewForm({ ...newForm, title: e.target.value })} className="input" />
             <input placeholder={t("Description")} value={newForm.description} onChange={(e) => setNewForm({ ...newForm, description: e.target.value })} className="input" />
           </div>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" checked={newForm.active !== false} onChange={(e) => setNewForm({ ...newForm, active: e.target.checked })} className="h-4 w-4" />
+            {t("Actif")}
+          </label>
           <div className="flex gap-2">
             <button onClick={addItem} className="btn-primary !px-3 !py-2 text-sm"><Check className="h-4 w-4" /> {t("Valider")}</button>
             <button onClick={() => { setAdding(false); setNewForm(EMPTY); }} className="btn-ghost !px-3 !py-2 text-sm"><X className="h-4 w-4" /> {t("Annuler")}</button>
@@ -99,6 +103,7 @@ export default function AdminLoadingDateEditor() {
                 <th className="px-4 py-3 text-left font-semibold">{t("Date")}</th>
                 <th className="px-4 py-3 text-left font-semibold">{t("Titre")}</th>
                 <th className="px-4 py-3 text-left font-semibold">{t("Description")}</th>
+                <th className="px-4 py-3 text-left font-semibold">{t("Actif")}</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -110,6 +115,7 @@ export default function AdminLoadingDateEditor() {
                       <td className="px-4 py-2"><input type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} className="input !py-1.5" /></td>
                       <td className="px-4 py-2"><input value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} className="input !py-1.5" /></td>
                       <td className="px-4 py-2"><input value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} className="input !py-1.5" /></td>
+                      <td className="px-4 py-2"><input type="checkbox" checked={editForm.active !== false} onChange={(e) => setEditForm({ ...editForm, active: e.target.checked })} className="h-4 w-4" aria-label={t("Actif")} /></td>
                       <td className="px-4 py-2">
                         <div className="flex gap-2">
                           <button onClick={saveEdit} aria-label={t("Valider")} className="text-green-600"><Check className="h-4 w-4" /></button>
@@ -122,6 +128,11 @@ export default function AdminLoadingDateEditor() {
                       <td className="px-4 py-3 font-medium">{item.date}</td>
                       <td className="px-4 py-3">{item.title}</td>
                       <td className="px-4 py-3 text-gray-500">{item.description}</td>
+                      <td className="px-4 py-3">
+                        <span className={`badge ${item.active !== false ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
+                          {item.active !== false ? t("Actif") : t("Inactif")}
+                        </span>
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <button onClick={() => { setEditingId(item.id); setEditForm({ ...item }); }} aria-label={t("Modifier")} className="text-brand-blue"><Edit2 className="h-4 w-4" /></button>

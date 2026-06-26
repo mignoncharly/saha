@@ -57,6 +57,7 @@ const fr: Record<string, string> = {
   "admin.pickups": "Ramassages",
   "admin.loadings": "Chargements",
   "admin.notifications": "Notifications",
+  "admin.audit": "Audit",
 };
 
 const de: Record<string, string> = {
@@ -108,6 +109,7 @@ const de: Record<string, string> = {
   "admin.pickups": "Abholungen",
   "admin.loadings": "Verladungen",
   "admin.notifications": "Benachrichtigungen",
+  "admin.audit": "Audit",
   "Navigation principale": "Hauptnavigation",
   "Services": "Leistungen",
   "Email": "E-Mail",
@@ -534,6 +536,14 @@ const de: Record<string, string> = {
   "Prix estimé": "Geschätzter Preis",
   "Prix final": "Endpreis",
   "Historique des statuts": "Statusverlauf",
+  "Journal d'audit": "Audit-Protokoll",
+  "Toutes les entités": "Alle Entitäten",
+  "Aucune entrée": "Keine Einträge",
+  "Les actions des administrateurs apparaîtront ici.": "Admin-Aktionen erscheinen hier.",
+  "Acteur": "Akteur",
+  "Action": "Aktion",
+  "Entité": "Entität",
+  "Système": "System",
   "Le libellé est requis.": "Die Bezeichnung ist erforderlich.",
   "Tarif mis à jour.": "Preis aktualisiert.",
   "Supprimer ce tarif ?": "Diesen Preis löschen?",

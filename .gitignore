@@ -3,6 +3,19 @@
 .env.*
 !.env.example
 
+# Deployment secrets & generated configs (real values live on the server only).
+# Keep the *.example templates tracked.
+deploy/.secrets.json
+deploy/redis-saha.conf
+!deploy/.secrets.example.json
+!deploy/redis-saha.conf.example
+
+# ---- Runtime / data artifacts (must never be committed) ----
+deploy/redis-data/
+*.rdb
+*.pid
+backups/
+
 # ---- Python / Django backend ----
 __pycache__/
 *.py[cod]

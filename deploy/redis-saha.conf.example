@@ -1,0 +1,15 @@
+# SAHA-STL dedicated Redis instance — TEMPLATE.
+# Copy to deploy/redis-saha.conf on the server and set a real `requirepass`.
+# The real conf is gitignored because it embeds the Redis password.
+bind 127.0.0.1 ::1
+protected-mode yes
+port 6383
+requirepass REPLACE_ME__redis_password__must_match_REDIS_PASSWORD_in_secrets
+dir /home/mignon/saha/deploy/redis-data
+pidfile /home/mignon/saha/deploy/redis-data/redis-saha.pid
+logfile ""
+appendonly no
+save 900 1
+save 300 10
+save 60 10000
+daemonize no

@@ -8,6 +8,7 @@ from .serializers import (
     TransportRequestCreateSerializer,
     TransportRequestStatusSerializer,
     PublicTransportRequestTrackingSerializer,
+    CustomerTransportRequestDetailSerializer,
 )
 from .status import ALLOWED_STATUS_TRANSITIONS
 from apps.customers.matching import resolve_customer
@@ -166,3 +167,21 @@ class CustomerRequestListView(generics.ListAPIView):
         if not customer:
             return TransportRequest.objects.none()
         return TransportRequest.objects.filter(customer=customer)
+
+
+class CustomerRequestDetailView(generics.RetrieveAPIView):
+    # Full detail of the authenticated customer's OWN request. The queryset is
+    # scoped to their customer profile, so requesting someone else's reference
+    # returns 404 (not their data) rather than leaking it.
+    serializer_class = CustomerTransportRequestDetailSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'reference_code'
+    lookup_url_kwarg = 'reference_code'
+
+    def get_queryset(self):
+        customer = getattr(self.request.user, 'customer_profile', None)
+        if not customer:
+            return TransportRequest.objects.none()
+        return TransportRequest.objects.select_related(
+            'service_type', 'destination_city'
+        ).filter(customer=customer)

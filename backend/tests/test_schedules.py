@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APITestCase
@@ -100,6 +101,72 @@ class AdminPickupScheduleTests(APITestCase):
         self.client.force_authenticate(None)
         public = self.client.get(reverse("pickup-schedule-list"))
         self.assertEqual(len(public.data), 0)
+
+    def _csv_file(self, content):
+        return SimpleUploadedFile(
+            "pickup.csv", content.encode("utf-8"), content_type="text/csv"
+        )
+
+    def test_import_preview_returns_summary_without_writing(self):
+        region = PickupRegion.objects.create(name="Hesse", cities="Frankfurt")
+        schedule = PickupSchedule.objects.create(
+            region=region,
+            cities="Frankfurt",
+            start_date=date(2026, 7, 1),
+            notes="Original",
+            active=True,
+        )
+        csv_content = (
+            "region_name,cities,start_date,end_date,notes,active\n"
+            "Hesse,Frankfurt,2026-07-01,,Updated,0\n"
+            "Bavière,Munich,2026-09-01,2026-09-03,Nouveau,1\n"
+            ",Ville,2026-10-01,,Invalide,1\n"
+        )
+
+        response = self.client.post(
+            f"{reverse('admin-schedule-import')}?dry_run=1",
+            {"file": self._csv_file(csv_content)},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(len(response.data["to_create"]), 1)
+        self.assertEqual(len(response.data["to_update"]), 1)
+        self.assertEqual(len(response.data["errors"]), 1)
+        self.assertEqual(response.data["to_update"][0]["row"], 2)
+        self.assertEqual(response.data["to_create"][0]["region_name"], "Bavière")
+        self.assertEqual(PickupSchedule.objects.count(), 1)
+        self.assertFalse(PickupRegion.objects.filter(name="Bavière").exists())
+        schedule.refresh_from_db()
+        self.assertEqual(schedule.notes, "Original")
+        self.assertTrue(schedule.active)
+
+    def test_import_apply_creates_and_updates(self):
+        region = PickupRegion.objects.create(name="Hesse", cities="Frankfurt")
+        PickupSchedule.objects.create(
+            region=region, start_date=date(2026, 7, 1), notes="Original"
+        )
+        csv_content = (
+            "region_name,cities,start_date,end_date,notes,active\n"
+            "Hesse,Frankfurt am Main,2026-07-01,,Updated,0\n"
+            "Bavière,Munich,2026-09-01,2026-09-03,Nouveau,1\n"
+        )
+
+        response = self.client.post(
+            reverse("admin-schedule-import"),
+            {"file": self._csv_file(csv_content)},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.data["created"], 1)
+        self.assertEqual(response.data["updated"], 1)
+        updated = PickupSchedule.objects.get(region=region, start_date=date(2026, 7, 1))
+        self.assertEqual(updated.notes, "Updated")
+        self.assertFalse(updated.active)
+        created = PickupSchedule.objects.get(region__name="Bavière")
+        self.assertEqual(created.cities, "Munich")
+        self.assertEqual(created.end_date, date(2026, 9, 3))
 
 
 class AdminLoadingDateTests(APITestCase):

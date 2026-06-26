@@ -1,5 +1,6 @@
 import os
 import environ
+from celery.schedules import crontab
 from pathlib import Path
 from django.utils.translation import gettext_lazy as _
 
@@ -100,6 +101,17 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Europe/Paris'
+CELERY_BEAT_SCHEDULE = {
+    'run-data-retention-daily': {
+        'task': 'apps.logistics.tasks.run_data_retention_task',
+        'schedule': crontab(hour=3, minute=30),
+    },
+}
+
+# Data retention: purge photos for old terminal requests by default. Customer
+# PII anonymization is available but must be explicitly enabled.
+DATA_RETENTION_DAYS = env.int('DATA_RETENTION_DAYS', default=365)
+DATA_RETENTION_ANONYMIZE_CUSTOMERS = env.bool('DATA_RETENTION_ANONYMIZE_CUSTOMERS', default=False)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

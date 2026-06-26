@@ -1,17 +1,23 @@
 import io
+import shutil
+import tempfile
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.test import override_settings
+from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from PIL import Image
 from rest_framework.test import APITestCase
 
+from apps.audit.models import AuditLog
 from apps.customers.models import Customer
 from apps.destinations.models import DestinationCity
 from apps.logistics.models import TransportRequest, TransportRequestPhoto
 from apps.logistics.reference import create_transport_request_with_reference
+from apps.logistics.retention import run_data_retention
 from apps.services.models import ServiceType
 
 User = get_user_model()
@@ -241,3 +247,117 @@ class CustomerRequestListTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["reference_code"], "STL-2026-000010")
+
+
+class DataRetentionTests(APITestCase):
+    def setUp(self):
+        self.media_root = tempfile.mkdtemp()
+        self.override = override_settings(MEDIA_ROOT=self.media_root, DATA_RETENTION_DAYS=30)
+        self.override.enable()
+        self.addCleanup(self.override.disable)
+        self.addCleanup(lambda: shutil.rmtree(self.media_root, ignore_errors=True))
+        self.admin = User.objects.create_user(
+            email="admin@example.com", password="StrongPass123!", role="admin"
+        )
+
+    def _request_with_photo(self, *, status="delivered", days_old=45, customer=None):
+        customer = customer or Customer.objects.create(
+            full_name="Client Privé",
+            phone="+33600000000",
+            whatsapp_number="+33600000000",
+            email="client@example.com",
+        )
+        req = TransportRequest.objects.create(
+            reference_code=f"STL-2026-{TransportRequest.objects.count() + 1:06d}",
+            customer=customer,
+            pickup_city="Paris",
+            pickup_address="1 rue privée",
+            status=status,
+        )
+        old_time = timezone.now() - timezone.timedelta(days=days_old)
+        TransportRequest.objects.filter(id=req.id).update(updated_at=old_time)
+        req.refresh_from_db()
+        photo = TransportRequestPhoto.objects.create(
+            request=req, image=SimpleUploadedFile("retention.jpg", b"photo", "image/jpeg")
+        )
+        return req, photo
+
+    def test_retention_dry_run_reports_without_deleting_photos(self):
+        _req, photo = self._request_with_photo()
+        path = photo.image.path
+
+        result = run_data_retention(apply=False, anonymize_customers=False)
+
+        self.assertTrue(result["dry_run"])
+        self.assertEqual(result["photos_deleted"], 1)
+        self.assertTrue(TransportRequestPhoto.objects.filter(id=photo.id).exists())
+        self.assertTrue(photo.image.storage.exists(photo.image.name))
+        self.assertTrue(path)
+
+    def test_retention_apply_deletes_only_old_terminal_photos(self):
+        _eligible, eligible_photo = self._request_with_photo(status="delivered", days_old=45)
+        _active, active_photo = self._request_with_photo(status="in_transit", days_old=45)
+        _recent, recent_photo = self._request_with_photo(status="delivered", days_old=5)
+        eligible_name = eligible_photo.image.name
+
+        result = run_data_retention(apply=True, anonymize_customers=False, actor=self.admin)
+
+        self.assertFalse(result["dry_run"])
+        self.assertEqual(result["photos_deleted"], 1)
+        self.assertFalse(TransportRequestPhoto.objects.filter(id=eligible_photo.id).exists())
+        self.assertFalse(eligible_photo.image.storage.exists(eligible_name))
+        self.assertTrue(TransportRequestPhoto.objects.filter(id=active_photo.id).exists())
+        self.assertTrue(TransportRequestPhoto.objects.filter(id=recent_photo.id).exists())
+        self.assertTrue(AuditLog.objects.filter(action="retention_photos_purged").exists())
+
+    def test_retention_anonymizes_only_customers_without_active_or_recent_requests(self):
+        eligible_customer = Customer.objects.create(
+            full_name="Eligible Client", phone="+331", whatsapp_number="+331", email="old@example.com"
+        )
+        active_customer = Customer.objects.create(
+            full_name="Active Client", phone="+332", whatsapp_number="+332", email="active@example.com"
+        )
+        self._request_with_photo(status="delivered", days_old=45, customer=eligible_customer)
+        self._request_with_photo(status="in_transit", days_old=45, customer=active_customer)
+
+        result = run_data_retention(apply=True, anonymize_customers=True, actor=self.admin)
+
+        self.assertEqual(result["customers_anonymized"], 1)
+        eligible_customer.refresh_from_db()
+        active_customer.refresh_from_db()
+        self.assertEqual(eligible_customer.full_name, f"Anonymized #{eligible_customer.id}")
+        self.assertIsNone(eligible_customer.phone)
+        self.assertIsNone(eligible_customer.whatsapp_number)
+        self.assertIsNone(eligible_customer.email)
+        self.assertEqual(active_customer.full_name, "Active Client")
+        self.assertTrue(AuditLog.objects.filter(action="retention_customers_anonymized").exists())
+
+    def test_admin_retention_endpoint_is_staff_only_and_dry_run_by_default(self):
+        _req, photo = self._request_with_photo()
+        customer = User.objects.create_user(
+            email="customer@example.com", password="StrongPass123!", role="customer"
+        )
+        self.client.force_authenticate(customer)
+        forbidden = self.client.post(reverse("admin-data-retention"), {}, format="json")
+        self.assertIn(forbidden.status_code, (401, 403))
+
+        self.client.force_authenticate(self.admin)
+        response = self.client.post(reverse("admin-data-retention"), {}, format="json")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertTrue(response.data["dry_run"])
+        self.assertEqual(response.data["photos_deleted"], 1)
+        self.assertTrue(TransportRequestPhoto.objects.filter(id=photo.id).exists())
+
+    def test_admin_retention_endpoint_can_apply(self):
+        _req, photo = self._request_with_photo()
+        self.client.force_authenticate(self.admin)
+
+        response = self.client.post(
+            reverse("admin-data-retention"), {"apply": True}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertFalse(response.data["dry_run"])
+        self.assertEqual(response.data["photos_deleted"], 1)
+        self.assertFalse(TransportRequestPhoto.objects.filter(id=photo.id).exists())

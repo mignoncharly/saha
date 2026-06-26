@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { KeyRound, CheckCircle } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, parseApiError } from "@/lib/api";
 import AuthCard from "@/components/auth/AuthCard";
 import FormField from "@/components/ui/FormField";
 import PasswordInput from "@/components/ui/PasswordInput";
@@ -33,8 +33,10 @@ function ResetPasswordInner() {
       setSuccess(true);
       toast.success(t("Mot de passe réinitialisé."));
       setTimeout(() => router.push("/compte/connexion"), 2500);
-    } catch {
-      setError(t("Erreur lors de la réinitialisation. Le lien est peut-être expiré."));
+    } catch (err) {
+      // Surface server-side validator messages (e.g. password too short/common)
+      // instead of a single generic line; Django localises them via Accept-Language.
+      setError(parseApiError(err, t("Erreur lors de la réinitialisation. Le lien est peut-être expiré.")));
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,8 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import TransportRequest, RequestStatusEvent
+from django.shortcuts import get_object_or_404
+from .models import TransportRequest, RequestStatusEvent, RequestComment
 from .serializers import (
     TransportRequestListSerializer,
     TransportRequestDetailSerializer,
@@ -10,6 +11,7 @@ from .serializers import (
     PublicTransportRequestTrackingSerializer,
     CustomerTransportRequestDetailSerializer,
     RequestStatusEventSerializer,
+    RequestCommentSerializer,
 )
 from .status import ALLOWED_STATUS_TRANSITIONS
 from apps.customers.matching import resolve_customer
@@ -208,3 +210,23 @@ class CustomerRequestStatusHistoryView(generics.ListAPIView):
             request__reference_code=self.kwargs['reference_code'],
             request__customer=customer,
         ).select_related('actor')
+
+
+class CustomerRequestCommentView(generics.ListCreateAPIView):
+    # The owner's comment thread on their own request: reads/writes only
+    # non-internal comments. 404 if the request isn't theirs.
+    serializer_class = RequestCommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _request_obj(self):
+        customer = getattr(self.request.user, 'customer_profile', None)
+        return get_object_or_404(
+            TransportRequest, reference_code=self.kwargs['reference_code'],
+            customer=customer if customer else None,
+        )
+
+    def get_queryset(self):
+        return self._request_obj().comments.filter(is_internal=False).select_related('author')
+
+    def perform_create(self, serializer):
+        serializer.save(request=self._request_obj(), author=self.request.user, is_internal=False)
